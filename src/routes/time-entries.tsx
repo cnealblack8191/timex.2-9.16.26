@@ -46,10 +46,7 @@ function TimeEntriesPage() {
   const [draft, setDraft] = useState({ clock_in: "", clock_out: "", job_id: "", notes: "" });
   const [saving, setSaving] = useState(false);
 
-  const anchorDate = useMemo(() => {
-    const [y, m, d] = anchor.split("-").map(Number);
-    return new Date(y, m - 1, d);
-  }, [anchor]);
+  const anchorDate = useMemo(() => parseDateKey(anchor), [anchor]);
 
   const from = scope === "day" ? anchor : toDateKey(weekStart(anchorDate));
   const to = scope === "day" ? anchor : toDateKey(weekEnd(anchorDate));

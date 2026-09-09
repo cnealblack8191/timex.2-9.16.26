@@ -28,10 +28,7 @@ export const Route = createFileRoute("/payroll")({
 
 function PayrollPage() {
   const [anchorKey, setAnchorKey] = useState(toDateKey(new Date()));
-  const anchor = useMemo(() => {
-    const [y, m, d] = anchorKey.split("-").map(Number);
-    return new Date(y, m - 1, d);
-  }, [anchorKey]);
+  const anchor = useMemo(() => parseDateKey(anchorKey), [anchorKey]);
 
   const from = toDateKey(weekStart(anchor));
   const to = toDateKey(weekEnd(anchor));
