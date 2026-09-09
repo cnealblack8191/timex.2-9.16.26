@@ -100,9 +100,14 @@ export function formatTime(iso: string | null) {
   });
 }
 
+/** Parses a YYYY-MM-DD key as a local date (avoids UTC shifting the day). */
+export function parseDateKey(dateStr: string) {
+  const parts = dateStr.split("-").map(Number);
+  return new Date(parts[0] ?? 1970, (parts[1] ?? 1) - 1, parts[2] ?? 1);
+}
+
 export function formatDay(dateStr: string) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString([], {
+  return parseDateKey(dateStr).toLocaleDateString([], {
     weekday: "short",
     month: "short",
     day: "numeric",
