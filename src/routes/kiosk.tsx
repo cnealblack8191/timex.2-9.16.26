@@ -127,7 +127,7 @@ function Kiosk() {
       if (offline) {
         enqueue({
           ...payload,
-          queued_id: crypto.randomUUID(),
+          queued_id: punchId,
           employee_name: fullName(employee),
           job_label: jobLabel(selectedJob),
         });
