@@ -122,7 +122,7 @@ function PayrollPage() {
     ]);
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "letter" });
     const overtimeHours = otPeople.reduce(
-      (sum, row) => sum + (row.total - OVERTIME_THRESHOLD),
+      (sum, row) => sum + (row.workTotal - OVERTIME_THRESHOLD),
       0,
     );
 
