@@ -17,5 +17,11 @@
 - [x] Code-protected Adjustments screen on the kiosk (edit times/job, add missing punches, reason required)
 - [x] Change the kiosk adjustment code from the dashboard
 
+Architecture: the dashboard (/) is office-only; the kiosk (/kiosk + /adjustments)
+is a self-contained mobile surface meant to be embedded in ECI's existing
+iOS/Android app via a WebView. Kiosk has no dependency on portal UI, works
+offline (punches queue on-device in localStorage and auto-sync on reconnect),
+and portal data updates live via realtime.
+
 Open: no manager login yet — the portal is open to anyone with the link.
 Employee data is sample data until the existing ECI system is connected.
