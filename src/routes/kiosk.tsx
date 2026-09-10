@@ -107,7 +107,7 @@ function Kiosk() {
       job_id: jobId,
       action,
       at: new Date().toISOString(),
-      job_overridden: override,
+      job_overridden: jobId !== employee.assigned_job_id,
     };
     const stamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     try {
