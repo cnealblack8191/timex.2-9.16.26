@@ -21,7 +21,7 @@ export const Route = createFileRoute("/adjustments")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Time Adjustments — TimeX" },
+      { title: "TimeX" },
       {
         name: "description",
         content: "Protected screen for correcting employee punches on the jobsite, with a reason on every change.",

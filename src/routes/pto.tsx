@@ -9,7 +9,7 @@ import { entryHours, formatDay, fullName, toDateKey } from "@/lib/timekeeping";
 export const Route = createFileRoute("/pto")({
   head: () => ({
     meta: [
-      { title: "PTO & Vacation — TimeX" },
+      { title: "TimeX" },
       { name: "description", content: "Enter PTO and vacation pay for one employee or a whole crew." },
       { property: "og:title", content: "PTO & Vacation — TimeX" },
       { property: "og:description", content: "Enter PTO and vacation pay for one employee or a whole crew." },

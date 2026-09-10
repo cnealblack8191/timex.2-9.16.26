@@ -10,7 +10,7 @@ import { fullName, jobLabel, type Division, type Employee, type Job } from "@/li
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — TimeX" },
+      { title: "TimeX" },
       { name: "description", content: "Manage divisions, jobs, employees, and kiosk settings." },
       { property: "og:title", content: "Admin — TimeX" },
       { property: "og:description", content: "Manage divisions, jobs, employees, and kiosk settings." },

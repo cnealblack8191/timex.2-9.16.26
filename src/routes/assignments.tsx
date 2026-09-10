@@ -9,7 +9,7 @@ import { fullName, jobLabel } from "@/lib/timekeeping";
 export const Route = createFileRoute("/assignments")({
   head: () => ({
     meta: [
-      { title: "Job Assignments — TimeX" },
+      { title: "TimeX" },
       { name: "description", content: "Assign employees to jobs individually or in bulk by division." },
       { property: "og:title", content: "Job Assignments — TimeX" },
       { property: "og:description", content: "Assign employees to jobs individually or in bulk by division." },
