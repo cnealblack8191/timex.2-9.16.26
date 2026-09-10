@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdjustmentsRouteImport } from './routes/adjustments'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
@@ -22,6 +23,11 @@ import { Route as ApiPublicKioskPunchRouteImport } from './routes/api/public/kio
 import { Route as ApiPublicKioskStatusRouteImport } from './routes/api/public/kiosk/status'
 import { Route as ApiPublicKioskVerifyPinRouteImport } from './routes/api/public/kiosk/verify-pin'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdjustmentsRoute = AdjustmentsRouteImport.update({
   id: '/adjustments',
   path: '/adjustments',
@@ -84,6 +90,7 @@ const ApiPublicKioskVerifyPinRoute = ApiPublicKioskVerifyPinRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/api/public/kiosk/verify-pin': typeof ApiPublicKioskVerifyPinRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/adjustments'
     | '/admin'
     | '/assignments'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/api/public/kiosk/verify-pin'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/adjustments'
     | '/admin'
     | '/assignments'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/api/public/kiosk/verify-pin'
   id:
     | '__root__'
+    | '/'
     | '/adjustments'
     | '/admin'
     | '/assignments'
@@ -172,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AdjustmentsRoute: typeof AdjustmentsRoute
   AdminRoute: typeof AdminRoute
   AssignmentsRoute: typeof AssignmentsRoute
@@ -188,6 +201,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/adjustments': {
       id: '/adjustments'
       path: '/adjustments'
@@ -276,6 +296,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AdjustmentsRoute: AdjustmentsRoute,
   AdminRoute: AdminRoute,
   AssignmentsRoute: AssignmentsRoute,
