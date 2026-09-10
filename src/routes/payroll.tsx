@@ -24,6 +24,18 @@ import {
   weekNumber,
 } from "@/lib/timekeeping";
 
+async function imageToBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load logo: ${res.status}`);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 export const Route = createFileRoute("/payroll")({
   head: () => ({
     meta: [
