@@ -30,7 +30,6 @@ function Kiosk() {
 
   const [employeeId, setEmployeeId] = useState("");
   const [jobId, setJobId] = useState("");
-  const [override, setOverride] = useState(false);
   const [clock, setClock] = useState("");
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
