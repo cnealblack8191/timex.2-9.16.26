@@ -58,14 +58,18 @@ function PayrollPage() {
         const perDay = days.map((day) => {
           const key = toDateKey(day);
           return mine
-            .filter((e) => e.work_date === key)
+            .filter((e) => e.work_date === key && e.entry_type === "work")
             .reduce((sum, e) => sum + entryHours(e), 0);
         });
-        const total = perDay.reduce((a, b) => a + b, 0);
+        const workTotal = perDay.reduce((a, b) => a + b, 0);
         const ptoHours = mine
-          .filter((e) => e.entry_type !== "work")
+          .filter((e) => e.entry_type === "pto")
           .reduce((sum, e) => sum + entryHours(e), 0);
-        return { emp, perDay, total, ptoHours };
+        const vacationHours = mine
+          .filter((e) => e.entry_type === "vacation")
+          .reduce((sum, e) => sum + entryHours(e), 0);
+        const total = workTotal + ptoHours + vacationHours;
+        return { emp, perDay, total, ptoHours, vacationHours };
       })
       .filter((r) => r.total > 0)
       .sort((a, b) => b.total - a.total);
