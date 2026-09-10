@@ -9,11 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdjustmentsRouteImport } from './routes/adjustments'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as KioskRouteImport } from './routes/kiosk'
+import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as PtoRouteImport } from './routes/pto'
 import { Route as TimeEntriesRouteImport } from './routes/time-entries'
@@ -22,11 +22,6 @@ import { Route as ApiPublicKioskPunchRouteImport } from './routes/api/public/kio
 import { Route as ApiPublicKioskStatusRouteImport } from './routes/api/public/kiosk/status'
 import { Route as ApiPublicKioskVerifyPinRouteImport } from './routes/api/public/kiosk/verify-pin'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdjustmentsRoute = AdjustmentsRouteImport.update({
   id: '/adjustments',
   path: '/adjustments',
@@ -45,6 +40,11 @@ const AssignmentsRoute = AssignmentsRouteImport.update({
 const KioskRoute = KioskRouteImport.update({
   id: '/kiosk',
   path: '/kiosk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperationsRoute = OperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PayrollRoute = PayrollRouteImport.update({
@@ -84,11 +84,11 @@ const ApiPublicKioskVerifyPinRoute = ApiPublicKioskVerifyPinRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
+  '/operations': typeof OperationsRoute
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
@@ -98,11 +98,11 @@ export interface FileRoutesByFullPath {
   '/api/public/kiosk/verify-pin': typeof ApiPublicKioskVerifyPinRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
+  '/operations': typeof OperationsRoute
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
@@ -113,11 +113,11 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
+  '/operations': typeof OperationsRoute
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
@@ -129,11 +129,11 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/adjustments'
     | '/admin'
     | '/assignments'
     | '/kiosk'
+    | '/operations'
     | '/payroll'
     | '/pto'
     | '/time-entries'
@@ -143,11 +143,11 @@ export interface FileRouteTypes {
     | '/api/public/kiosk/verify-pin'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/adjustments'
     | '/admin'
     | '/assignments'
     | '/kiosk'
+    | '/operations'
     | '/payroll'
     | '/pto'
     | '/time-entries'
@@ -157,11 +157,11 @@ export interface FileRouteTypes {
     | '/api/public/kiosk/verify-pin'
   id:
     | '__root__'
-    | '/'
     | '/adjustments'
     | '/admin'
     | '/assignments'
     | '/kiosk'
+    | '/operations'
     | '/payroll'
     | '/pto'
     | '/time-entries'
@@ -172,11 +172,11 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AdjustmentsRoute: typeof AdjustmentsRoute
   AdminRoute: typeof AdminRoute
   AssignmentsRoute: typeof AssignmentsRoute
   KioskRoute: typeof KioskRoute
+  OperationsRoute: typeof OperationsRoute
   PayrollRoute: typeof PayrollRoute
   PtoRoute: typeof PtoRoute
   TimeEntriesRoute: typeof TimeEntriesRoute
@@ -188,13 +188,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/adjustments': {
       id: '/adjustments'
       path: '/adjustments'
@@ -221,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: '/kiosk'
       fullPath: '/kiosk'
       preLoaderRoute: typeof KioskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operations': {
+      id: '/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof OperationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payroll': {
@@ -276,11 +276,11 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AdjustmentsRoute: AdjustmentsRoute,
   AdminRoute: AdminRoute,
   AssignmentsRoute: AssignmentsRoute,
   KioskRoute: KioskRoute,
+  OperationsRoute: OperationsRoute,
   PayrollRoute: PayrollRoute,
   PtoRoute: PtoRoute,
   TimeEntriesRoute: TimeEntriesRoute,
