@@ -18,9 +18,9 @@
 - [x] Change the kiosk adjustment code from the dashboard
 - [x] Kiosk API for the native iOS/Android app (bootstrap, punch, status, code check)
 - [x] Duplicate-proof punch sync (device punch id) for both the app and the web kiosk
-- [ ] Admin section: add/edit divisions, jobs, employees
-- [ ] Admin section: change kiosk supervisor adjustment code
-- [ ] Move kiosk code control from Operations dashboard to Admin section
+- [x] Admin section: add/edit divisions, jobs, employees
+- [x] Admin section: change kiosk supervisor adjustment code
+- [x] Move kiosk code control from Operations dashboard to Admin section
 
 Architecture: the dashboard (/) is office-only. The field kiosk exists twice:
 as the web screen at /kiosk (still fully supported, online and offline) and as
