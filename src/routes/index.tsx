@@ -1,8 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
-import eciLogo from "@/assets/eci-logo.png.asset.json";
 import {
   useDivisions,
   useEmployees,
