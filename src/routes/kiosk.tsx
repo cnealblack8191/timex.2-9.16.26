@@ -90,17 +90,13 @@ function Kiosk() {
   // Default the job to whatever the office assigned this employee.
   useEffect(() => {
     if (!employee) return;
-    setOverride(false);
     setJobId(employee.assigned_job_id ?? "");
   }, [employee]);
-
-  const jobChoices = override || !assignedJob ? jobs : jobs.filter((j) => j.id === assignedJob.id);
 
   function selectEmployee(nextEmployeeId: string) {
     const nextEmployee = employees.find((item) => item.id === nextEmployeeId);
     setEmployeeId(nextEmployeeId);
     setJobId(nextEmployee?.assigned_job_id ?? "");
-    setOverride(false);
   }
 
   async function punch(action: "in" | "out") {
