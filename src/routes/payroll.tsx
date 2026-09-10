@@ -152,7 +152,7 @@ function PayrollPage() {
         "Total",
       ]],
       body: rows.map((row) => {
-        const overtime = Math.max(0, row.total - OVERTIME_THRESHOLD);
+        const overtime = Math.max(0, row.workTotal - OVERTIME_THRESHOLD);
         return [
           fullName(row.emp),
           divisionById.get(row.emp.division_id ?? "")?.name ?? "",
@@ -160,7 +160,7 @@ function PayrollPage() {
           ...row.perDay.map((hours) => (hours ? hours.toFixed(2) : "-")),
           row.ptoHours ? row.ptoHours.toFixed(2) : "-",
           row.vacationHours ? row.vacationHours.toFixed(2) : "-",
-          (row.total - overtime).toFixed(2),
+          (row.workTotal - overtime).toFixed(2),
           overtime ? overtime.toFixed(2) : "-",
           row.total.toFixed(2),
         ];
