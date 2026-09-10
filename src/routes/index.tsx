@@ -5,7 +5,7 @@ import timexLogo from "@/assets/timex-logo.png.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TimeX — ECI Timekeeping" },
+      { title: "TimeX" },
       {
         name: "description",
         content:

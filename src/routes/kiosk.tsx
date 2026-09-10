@@ -11,7 +11,7 @@ export const Route = createFileRoute("/kiosk")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Jobsite Kiosk — TimeX" },
+      { title: "TimeX" },
       { name: "description", content: "Clock in and out on the jobsite. No login needed." },
       { property: "og:title", content: "Jobsite Kiosk — TimeX" },
       { property: "og:description", content: "Clock in and out on the jobsite. No login needed." },

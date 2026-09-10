@@ -39,7 +39,7 @@ async function imageToBase64(url: string): Promise<string> {
 export const Route = createFileRoute("/payroll")({
   head: () => ({
     meta: [
-      { title: "Payroll — TimeX" },
+      { title: "TimeX" },
       { name: "description", content: "Weekly hours review with overtime flags and payroll export." },
       { property: "og:title", content: "Payroll — TimeX" },
       { property: "og:description", content: "Weekly hours review with overtime flags and payroll export." },
