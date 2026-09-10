@@ -139,20 +139,26 @@ function PayrollPage() {
       0,
     );
 
+    const logoBase64 = await imageToBase64(logoAsset.url);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const logoWidth = 80;
+    const logoHeight = logoWidth * (164 / 150);
+    doc.addImage(logoBase64, "PNG", (pageWidth - logoWidth) / 2, 18, logoWidth, logoHeight);
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("TimeX Payroll Breakdown", 36, 38);
+    doc.text("TimeX Payroll Breakdown", 36, 118);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 55);
+    doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 135);
     doc.text(
       `Employees: ${rows.length}    Total hours: ${grand.toFixed(2)}    Overtime hours: ${overtimeHours.toFixed(2)}`,
       36,
-      69,
+      149,
     );
 
     autoTable(doc, {
-      startY: 83,
+      startY: 163,
       head: [[
         "Employee",
         "Division",
