@@ -294,7 +294,7 @@ function Kiosk() {
           )}
         </div>
 
-        <div className="mt-6">
+        <div className="mt-auto pt-8">
           <Link
             to="/adjustments"
             className="flex items-center justify-between rounded-[22px] bg-primary-foreground/5 px-5 py-4 ring-1 ring-primary-foreground/15 transition-colors active:bg-primary-foreground/10"
