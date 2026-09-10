@@ -307,7 +307,7 @@ function PayrollPage() {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={days.length + 3} className="px-4 py-10 text-center text-muted-foreground">
+                  <td colSpan={days.length + 4} className="px-4 py-10 text-center text-muted-foreground">
                     No hours recorded for this week.
                   </td>
                 </tr>
