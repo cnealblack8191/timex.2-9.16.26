@@ -21,12 +21,12 @@ export const Route = createFileRoute("/adjustments")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Time Adjustments — ECI Timekeeping" },
+      { title: "Time Adjustments — TimeX" },
       {
         name: "description",
         content: "Protected screen for correcting employee punches on the jobsite, with a reason on every change.",
       },
-      { property: "og:title", content: "Time Adjustments — ECI Timekeeping" },
+      { property: "og:title", content: "Time Adjustments — TimeX" },
       {
         property: "og:description",
         content: "Protected screen for correcting employee punches on the jobsite, with a reason on every change.",

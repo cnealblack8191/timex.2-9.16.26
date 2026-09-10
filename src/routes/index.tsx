@@ -23,13 +23,13 @@ import {
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "Operations — ECI Timekeeping" },
+      meta: [
+      { title: "Operations — TimeX" },
       {
         name: "description",
         content: "Live crew status, time entries and job assignments for Electrical Contractor Inc.",
       },
-      { property: "og:title", content: "Operations — ECI Timekeeping" },
+      { property: "og:title", content: "Operations — TimeX" },
       {
         property: "og:description",
         content: "Live crew status, time entries and job assignments for Electrical Contractor Inc.",

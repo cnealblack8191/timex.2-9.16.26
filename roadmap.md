@@ -12,6 +12,7 @@
 - [x] PTO & vacation pay for one or many employees
 - [x] Weekly hours review with 40-hour overtime flags
 - [x] Payroll CSV and PDF downloads
+- [x] Add separate PTO and Vacation columns to the payroll report
 - [x] Ensure an employee selection immediately populates their assigned job
 - [x] Code-protected Adjustments screen on the kiosk (edit times/job, add missing punches, reason required)
 - [x] Change the kiosk adjustment code from the dashboard

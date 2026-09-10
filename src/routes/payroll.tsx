@@ -26,9 +26,9 @@ import {
 export const Route = createFileRoute("/payroll")({
   head: () => ({
     meta: [
-      { title: "Payroll — ECI Timekeeping" },
+      { title: "Payroll — TimeX" },
       { name: "description", content: "Weekly hours review with overtime flags and payroll export." },
-      { property: "og:title", content: "Payroll — ECI Timekeeping" },
+      { property: "og:title", content: "Payroll — TimeX" },
       { property: "og:description", content: "Weekly hours review with overtime flags and payroll export." },
     ],
   }),
@@ -58,21 +58,25 @@ function PayrollPage() {
         const perDay = days.map((day) => {
           const key = toDateKey(day);
           return mine
-            .filter((e) => e.work_date === key)
+            .filter((e) => e.work_date === key && e.entry_type === "work")
             .reduce((sum, e) => sum + entryHours(e), 0);
         });
-        const total = perDay.reduce((a, b) => a + b, 0);
+        const workTotal = perDay.reduce((a, b) => a + b, 0);
         const ptoHours = mine
-          .filter((e) => e.entry_type !== "work")
+          .filter((e) => e.entry_type === "pto")
           .reduce((sum, e) => sum + entryHours(e), 0);
-        return { emp, perDay, total, ptoHours };
+        const vacationHours = mine
+          .filter((e) => e.entry_type === "vacation")
+          .reduce((sum, e) => sum + entryHours(e), 0);
+        const total = workTotal + ptoHours + vacationHours;
+        return { emp, perDay, workTotal, total, ptoHours, vacationHours };
       })
       .filter((r) => r.total > 0)
       .sort((a, b) => b.total - a.total);
   }, [employees, entries, days]);
 
   const grand = rows.reduce((sum, r) => sum + r.total, 0);
-  const otPeople = rows.filter((r) => r.total > OVERTIME_THRESHOLD);
+  const otPeople = rows.filter((r) => r.workTotal > OVERTIME_THRESHOLD);
 
   function exportCsv() {
     const header = [
@@ -80,21 +84,23 @@ function PayrollPage() {
       "Division",
       "Assigned Job",
       ...days.map((d) => d.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
-      "PTO/Vacation Hours",
+      "PTO Hours",
+      "Vacation Hours",
       "Total Hours",
       "Regular Hours",
       "Overtime Hours",
     ];
     const lines = rows.map((r) => {
-      const ot = Math.max(0, r.total - OVERTIME_THRESHOLD);
+      const ot = Math.max(0, r.workTotal - OVERTIME_THRESHOLD);
       return [
         fullName(r.emp),
         divisionById.get(r.emp.division_id ?? "")?.name ?? "",
         jobLabel(jobById.get(r.emp.assigned_job_id ?? "")),
         ...r.perDay.map((h) => h.toFixed(2)),
         r.ptoHours.toFixed(2),
+        r.vacationHours.toFixed(2),
         r.total.toFixed(2),
-        (r.total - ot).toFixed(2),
+        (r.workTotal - ot).toFixed(2),
         ot.toFixed(2),
       ];
     });
@@ -104,7 +110,7 @@ function PayrollPage() {
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `eci-payroll-${from}-to-${to}.csv`;
+    link.download = `timex-payroll-${from}-to-${to}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -116,13 +122,13 @@ function PayrollPage() {
     ]);
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "letter" });
     const overtimeHours = otPeople.reduce(
-      (sum, row) => sum + (row.total - OVERTIME_THRESHOLD),
+      (sum, row) => sum + (row.workTotal - OVERTIME_THRESHOLD),
       0,
     );
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("ECI Payroll Breakdown", 36, 38);
+    doc.text("TimeX Payroll Breakdown", 36, 38);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 55);
@@ -139,20 +145,22 @@ function PayrollPage() {
         "Division",
         "Assigned Job",
         ...days.map((day) => day.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
-        "PTO/Vac",
+        "PTO",
+        "Vacation",
         "Regular",
         "OT",
         "Total",
       ]],
       body: rows.map((row) => {
-        const overtime = Math.max(0, row.total - OVERTIME_THRESHOLD);
+        const overtime = Math.max(0, row.workTotal - OVERTIME_THRESHOLD);
         return [
           fullName(row.emp),
           divisionById.get(row.emp.division_id ?? "")?.name ?? "",
           jobLabel(jobById.get(row.emp.assigned_job_id ?? "")),
           ...row.perDay.map((hours) => (hours ? hours.toFixed(2) : "-")),
           row.ptoHours ? row.ptoHours.toFixed(2) : "-",
-          (row.total - overtime).toFixed(2),
+          row.vacationHours ? row.vacationHours.toFixed(2) : "-",
+          (row.workTotal - overtime).toFixed(2),
           overtime ? overtime.toFixed(2) : "-",
           row.total.toFixed(2),
         ];
@@ -165,7 +173,8 @@ function PayrollPage() {
           rows.reduce((sum, row) => sum + (row.perDay[index] ?? 0), 0).toFixed(2),
         ),
         rows.reduce((sum, row) => sum + row.ptoHours, 0).toFixed(2),
-        rows.reduce((sum, row) => sum + Math.min(row.total, OVERTIME_THRESHOLD), 0).toFixed(2),
+        rows.reduce((sum, row) => sum + row.vacationHours, 0).toFixed(2),
+        rows.reduce((sum, row) => sum + Math.min(row.workTotal, OVERTIME_THRESHOLD), 0).toFixed(2),
         overtimeHours.toFixed(2),
         grand.toFixed(2),
       ]],
@@ -183,11 +192,11 @@ function PayrollPage() {
       didDrawPage: ({ pageNumber }) => {
         doc.setFontSize(7);
         doc.setTextColor(100);
-        doc.text(`ECI Timekeeping · Page ${pageNumber}`, 36, doc.internal.pageSize.height - 18);
+        doc.text(`TimeX · Page ${pageNumber}`, 36, doc.internal.pageSize.height - 18);
       },
     });
 
-    doc.save(`eci-payroll-${from}-to-${to}.pdf`);
+    doc.save(`timex-payroll-${from}-to-${to}.pdf`);
   }
 
   return (
@@ -225,7 +234,7 @@ function PayrollPage() {
         </>
       }
     >
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {[
           { label: "Total hours", value: grand.toFixed(1) },
           { label: "Employees paid", value: String(rows.length) },
@@ -235,6 +244,14 @@ function PayrollPage() {
             value: otPeople
               .reduce((sum, r) => sum + (r.total - OVERTIME_THRESHOLD), 0)
               .toFixed(1),
+          },
+          {
+            label: "PTO hours",
+            value: rows.reduce((sum, r) => sum + r.ptoHours, 0).toFixed(1),
+          },
+          {
+            label: "Vacation hours",
+            value: rows.reduce((sum, r) => sum + r.vacationHours, 0).toFixed(1),
           },
         ].map((stat) => (
           <Panel key={stat.label} className="animate-rise p-4">
@@ -258,12 +275,13 @@ function PayrollPage() {
                   </th>
                 ))}
                 <th className="px-3 py-2.5 text-right font-semibold">PTO</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Vacation</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Total</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r) => {
-                const ot = r.total > OVERTIME_THRESHOLD;
+                const ot = r.workTotal > OVERTIME_THRESHOLD;
                 return (
                   <tr key={r.emp.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
                     <td className="px-4 py-2.5">
@@ -280,6 +298,9 @@ function PayrollPage() {
                     <td className="px-3 py-2.5 text-right font-mono text-steel">
                       {r.ptoHours ? r.ptoHours.toFixed(2) : "—"}
                     </td>
+                    <td className="px-3 py-2.5 text-right font-mono text-steel">
+                      {r.vacationHours ? r.vacationHours.toFixed(2) : "—"}
+                    </td>
                     <td className="px-4 py-2.5 text-right">
                       <span
                         className={`rounded px-2 py-1 font-mono font-bold ${
@@ -294,7 +315,7 @@ function PayrollPage() {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={days.length + 3} className="px-4 py-10 text-center text-muted-foreground">
+                  <td colSpan={days.length + 4} className="px-4 py-10 text-center text-muted-foreground">
                     No hours recorded for this week.
                   </td>
                 </tr>
