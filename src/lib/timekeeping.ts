@@ -211,7 +211,7 @@ export async function applyPunch(punch: PunchInput) {
     if (!openEntry) throw new Error("No open punch to close — you are not clocked in.");
     const { error } = await supabase
       .from("time_entries")
-      .update({ clock_out: punch.at })
+      .update({ clock_out: punch.at, client_punch_id: punch.client_punch_id ?? null })
       .eq("id", openEntry.id);
     if (error) throw error;
     return "Clocked out";
@@ -234,6 +234,8 @@ export async function applyPunch(punch: PunchInput) {
     clock_in: punch.at,
     entry_type: "work",
     job_overridden: punch.job_overridden,
+    client_punch_id: punch.client_punch_id ?? null,
+    source: "kiosk-web",
   });
   if (error) throw error;
   return openEntry ? "Switched jobs — clocked in" : "Clocked in";
