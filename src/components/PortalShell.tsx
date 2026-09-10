@@ -9,6 +9,7 @@ const NAV = [
   { to: "/assignments", label: "Assignments" },
   { to: "/pto", label: "PTO & Vacation" },
   { to: "/payroll", label: "Payroll" },
+  { to: "/admin", label: "Admin" },
 ] as const;
 
 export function PortalShell({
