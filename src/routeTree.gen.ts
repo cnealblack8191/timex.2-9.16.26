@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdjustmentsRouteImport } from './routes/adjustments'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as KioskRouteImport } from './routes/kiosk'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -19,6 +20,11 @@ import { Route as TimeEntriesRouteImport } from './routes/time-entries'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdjustmentsRoute = AdjustmentsRouteImport.update({
+  id: '/adjustments',
+  path: '/adjustments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssignmentsRoute = AssignmentsRouteImport.update({
@@ -49,6 +55,7 @@ const TimeEntriesRoute = TimeEntriesRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/adjustments': typeof AdjustmentsRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
   '/payroll': typeof PayrollRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/adjustments': typeof AdjustmentsRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
   '/payroll': typeof PayrollRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/adjustments': typeof AdjustmentsRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
   '/payroll': typeof PayrollRoute
@@ -75,12 +84,26 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/assignments' | '/kiosk' | '/payroll' | '/pto' | '/time-entries'
+    | '/'
+    | '/adjustments'
+    | '/assignments'
+    | '/kiosk'
+    | '/payroll'
+    | '/pto'
+    | '/time-entries'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assignments' | '/kiosk' | '/payroll' | '/pto' | '/time-entries'
+  to:
+    | '/'
+    | '/adjustments'
+    | '/assignments'
+    | '/kiosk'
+    | '/payroll'
+    | '/pto'
+    | '/time-entries'
   id:
     | '__root__'
     | '/'
+    | '/adjustments'
     | '/assignments'
     | '/kiosk'
     | '/payroll'
@@ -90,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdjustmentsRoute: typeof AdjustmentsRoute
   AssignmentsRoute: typeof AssignmentsRoute
   KioskRoute: typeof KioskRoute
   PayrollRoute: typeof PayrollRoute
@@ -104,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/adjustments': {
+      id: '/adjustments'
+      path: '/adjustments'
+      fullPath: '/adjustments'
+      preLoaderRoute: typeof AdjustmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assignments': {
@@ -146,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdjustmentsRoute: AdjustmentsRoute,
   AssignmentsRoute: AssignmentsRoute,
   KioskRoute: KioskRoute,
   PayrollRoute: PayrollRoute,

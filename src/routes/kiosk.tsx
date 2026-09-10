@@ -279,6 +279,16 @@ function Kiosk() {
               </button>
             </div>
 
+            <Link
+              to="/adjustments"
+              className="mt-3 block rounded-xl bg-primary-foreground/5 py-4 text-center font-display text-xl tracking-wide text-primary-foreground/80 ring-1 ring-primary-foreground/15"
+            >
+              Adjustments
+            </Link>
+            <p className="mt-2 text-center text-[11px] uppercase tracking-wide text-primary-foreground/35">
+              Supervisor code required
+            </p>
+
             {employeeId && (
               <p className="mt-4 text-center text-[13px] text-primary-foreground/50">
                 {isClockedIn
