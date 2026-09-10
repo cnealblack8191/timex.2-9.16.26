@@ -1,6 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ChevronDown, FileSpreadsheet, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Panel, PortalShell } from "@/components/PortalShell";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useDivisions, useEmployees, useJobs, useRangeEntries } from "@/hooks/use-timekeeping";
 import {
   OVERTIME_THRESHOLD,
@@ -101,6 +109,87 @@ function PayrollPage() {
     URL.revokeObjectURL(url);
   }
 
+  async function exportPdf() {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "letter" });
+    const overtimeHours = otPeople.reduce(
+      (sum, row) => sum + (row.total - OVERTIME_THRESHOLD),
+      0,
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("ECI Payroll Breakdown", 36, 38);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 55);
+    doc.text(
+      `Employees: ${rows.length}    Total hours: ${grand.toFixed(2)}    Overtime hours: ${overtimeHours.toFixed(2)}`,
+      36,
+      69,
+    );
+
+    autoTable(doc, {
+      startY: 83,
+      head: [[
+        "Employee",
+        "Division",
+        "Assigned Job",
+        ...days.map((day) => day.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
+        "PTO/Vac",
+        "Regular",
+        "OT",
+        "Total",
+      ]],
+      body: rows.map((row) => {
+        const overtime = Math.max(0, row.total - OVERTIME_THRESHOLD);
+        return [
+          fullName(row.emp),
+          divisionById.get(row.emp.division_id ?? "")?.name ?? "",
+          jobLabel(jobById.get(row.emp.assigned_job_id ?? "")),
+          ...row.perDay.map((hours) => (hours ? hours.toFixed(2) : "-")),
+          row.ptoHours ? row.ptoHours.toFixed(2) : "-",
+          (row.total - overtime).toFixed(2),
+          overtime ? overtime.toFixed(2) : "-",
+          row.total.toFixed(2),
+        ];
+      }),
+      foot: [[
+        "TOTAL",
+        "",
+        "",
+        ...days.map((_, index) =>
+          rows.reduce((sum, row) => sum + (row.perDay[index] ?? 0), 0).toFixed(2),
+        ),
+        rows.reduce((sum, row) => sum + row.ptoHours, 0).toFixed(2),
+        rows.reduce((sum, row) => sum + Math.min(row.total, OVERTIME_THRESHOLD), 0).toFixed(2),
+        overtimeHours.toFixed(2),
+        grand.toFixed(2),
+      ]],
+      showFoot: "lastPage",
+      theme: "grid",
+      styles: { font: "helvetica", fontSize: 7, cellPadding: 3, textColor: [28, 35, 43] },
+      headStyles: { fillColor: [28, 35, 43], textColor: [255, 255, 255], fontStyle: "bold" },
+      footStyles: { fillColor: [235, 238, 240], textColor: [28, 35, 43], fontStyle: "bold" },
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 80 },
+      },
+      margin: { left: 36, right: 36 },
+      didDrawPage: ({ pageNumber }) => {
+        doc.setFontSize(7);
+        doc.setTextColor(100);
+        doc.text(`ECI Timekeeping · Page ${pageNumber}`, 36, doc.internal.pageSize.height - 18);
+      },
+    });
+
+    doc.save(`eci-payroll-${from}-to-${to}.pdf`);
+  }
+
   return (
     <PortalShell
       title="Payroll"
@@ -116,12 +205,23 @@ function PayrollPage() {
           <span className="rounded-lg bg-ink px-3 py-2 font-mono text-primary-foreground">
             Week {weekNumber(anchor)}
           </span>
-          <button
-            onClick={exportCsv}
-            className="skew-btn rounded-lg bg-amber px-4 py-2 font-display text-[14px] tracking-wide text-ink hover:bg-amber-deep"
-          >
-            <span>Export CSV</span>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-amber font-display text-[14px] text-ink hover:bg-amber-deep">
+                Download <ChevronDown aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onSelect={exportCsv}>
+                <FileSpreadsheet aria-hidden="true" />
+                Download CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportPdf()}>
+                <FileText aria-hidden="true" />
+                Download PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </>
       }
     >

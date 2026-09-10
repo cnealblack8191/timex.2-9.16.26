@@ -96,6 +96,13 @@ function Kiosk() {
 
   const jobChoices = override || !assignedJob ? jobs : jobs.filter((j) => j.id === assignedJob.id);
 
+  function selectEmployee(nextEmployeeId: string) {
+    const nextEmployee = employees.find((item) => item.id === nextEmployeeId);
+    setEmployeeId(nextEmployeeId);
+    setJobId(nextEmployee?.assigned_job_id ?? "");
+    setOverride(false);
+  }
+
   async function punch(action: "in" | "out") {
     if (!employee || !jobId) return;
     setBusy(true);
@@ -213,7 +220,7 @@ function Kiosk() {
               </span>
               <select
                 value={employeeId}
-                onChange={(e) => setEmployeeId(e.target.value)}
+                onChange={(e) => selectEmployee(e.target.value)}
                 className="mt-2 w-full appearance-none rounded-xl bg-primary-foreground/10 px-4 py-5 text-[19px] font-bold text-primary-foreground ring-1 ring-primary-foreground/15"
               >
                 <option value="">Select your name</option>

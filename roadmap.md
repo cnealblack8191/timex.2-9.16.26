@@ -11,7 +11,8 @@
 - [x] Assignments: individual and bulk by division
 - [x] PTO & vacation pay for one or many employees
 - [x] Weekly hours review with 40-hour overtime flags
-- [x] Payroll CSV export
+- [x] Payroll CSV and PDF downloads
+- [x] Ensure an employee selection immediately populates their assigned job
 
 Open: no manager login yet — the portal is open to anyone with the link.
 Employee data is sample data until the existing ECI system is connected.
