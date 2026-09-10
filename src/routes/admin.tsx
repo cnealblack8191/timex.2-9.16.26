@@ -349,7 +349,7 @@ function JobsSection() {
             <button
               onClick={save}
               disabled={saving || !editing.number || !editing.name}
-              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
+              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
             >
               <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add job"}</span>
             </button>
@@ -455,7 +455,7 @@ function DivisionsSection() {
             <button
               onClick={save}
               disabled={saving || !editing.name || !editing.code}
-              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
+              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
             >
               <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add division"}</span>
             </button>
