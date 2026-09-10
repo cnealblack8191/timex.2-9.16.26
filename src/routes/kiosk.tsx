@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEmployees, useJobs, useOpenEntries } from "@/hooks/use-timekeeping";
 import { applyPunch, fullName, jobLabel, type Employee, type Job } from "@/lib/timekeeping";
 import { enqueue, flushQueue, getQueue } from "@/lib/offline-queue";
+import eciLogo from "@/assets/eci-logo.png.asset.json";
 
 export const Route = createFileRoute("/kiosk")({
   ssr: false,
@@ -151,9 +152,11 @@ function Kiosk() {
       <div className="mx-auto w-full max-w-[520px]">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 -skew-x-6 place-items-center rounded bg-amber font-display text-base text-ink">
-              EC
-            </div>
+            <img
+              src={eciLogo.url}
+              alt="Electrical Contractor Inc."
+              className="h-11 w-11 rounded object-contain"
+            />
             <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
               Punch
             </span>

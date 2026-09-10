@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useLiveTimekeeping } from "@/hooks/use-timekeeping";
+import eciLogo from "@/assets/eci-logo.png.asset.json";
 
 const NAV = [
   { to: "/", label: "Operations" },
@@ -28,9 +29,11 @@ export function PortalShell({
       <header className="sticky top-0 z-30 border-b border-line/70 bg-card/60 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 -skew-x-6 place-items-center rounded-md bg-ink font-display text-lg text-amber">
-              EC
-            </div>
+            <img
+              src={eciLogo.url}
+              alt="Electrical Contractor Inc."
+              className="h-10 w-10 rounded-md object-contain"
+            />
             <div className="leading-none">
               <div className="font-display text-[15px] tracking-wide">ECI TIMEKEEPING</div>
               <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
