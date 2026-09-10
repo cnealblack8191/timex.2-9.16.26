@@ -102,12 +102,14 @@ function Kiosk() {
   async function punch(action: "in" | "out") {
     if (!employee || !jobId) return;
     setBusy(true);
+    const punchId = crypto.randomUUID();
     const payload = {
       employee_id: employee.id,
       job_id: jobId,
       action,
       at: new Date().toISOString(),
       job_overridden: jobId !== employee.assigned_job_id,
+      client_punch_id: punchId,
     };
     const stamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     try {
@@ -125,7 +127,7 @@ function Kiosk() {
       if (offline) {
         enqueue({
           ...payload,
-          queued_id: crypto.randomUUID(),
+          queued_id: punchId,
           employee_name: fullName(employee),
           job_label: jobLabel(selectedJob),
         });

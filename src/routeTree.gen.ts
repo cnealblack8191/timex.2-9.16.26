@@ -16,6 +16,10 @@ import { Route as KioskRouteImport } from './routes/kiosk'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as PtoRouteImport } from './routes/pto'
 import { Route as TimeEntriesRouteImport } from './routes/time-entries'
+import { Route as ApiPublicKioskBootstrapRouteImport } from './routes/api/public/kiosk/bootstrap'
+import { Route as ApiPublicKioskPunchRouteImport } from './routes/api/public/kiosk/punch'
+import { Route as ApiPublicKioskStatusRouteImport } from './routes/api/public/kiosk/status'
+import { Route as ApiPublicKioskVerifyPinRouteImport } from './routes/api/public/kiosk/verify-pin'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +56,26 @@ const TimeEntriesRoute = TimeEntriesRouteImport.update({
   path: '/time-entries',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicKioskBootstrapRoute = ApiPublicKioskBootstrapRouteImport.update({
+  id: '/api/public/kiosk/bootstrap',
+  path: '/api/public/kiosk/bootstrap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicKioskPunchRoute = ApiPublicKioskPunchRouteImport.update({
+  id: '/api/public/kiosk/punch',
+  path: '/api/public/kiosk/punch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicKioskStatusRoute = ApiPublicKioskStatusRouteImport.update({
+  id: '/api/public/kiosk/status',
+  path: '/api/public/kiosk/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicKioskVerifyPinRoute = ApiPublicKioskVerifyPinRouteImport.update({
+  id: '/api/public/kiosk/verify-pin',
+  path: '/api/public/kiosk/verify-pin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +85,10 @@ export interface FileRoutesByFullPath {
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
+  '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
+  '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
+  '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
+  '/api/public/kiosk/verify-pin': typeof ApiPublicKioskVerifyPinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +98,10 @@ export interface FileRoutesByTo {
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
+  '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
+  '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
+  '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
+  '/api/public/kiosk/verify-pin': typeof ApiPublicKioskVerifyPinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +112,10 @@ export interface FileRoutesById {
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
+  '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
+  '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
+  '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
+  '/api/public/kiosk/verify-pin': typeof ApiPublicKioskVerifyPinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +127,10 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/pto'
     | '/time-entries'
+    | '/api/public/kiosk/bootstrap'
+    | '/api/public/kiosk/punch'
+    | '/api/public/kiosk/status'
+    | '/api/public/kiosk/verify-pin'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +140,10 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/pto'
     | '/time-entries'
+    | '/api/public/kiosk/bootstrap'
+    | '/api/public/kiosk/punch'
+    | '/api/public/kiosk/status'
+    | '/api/public/kiosk/verify-pin'
   id:
     | '__root__'
     | '/'
@@ -109,6 +153,10 @@ export interface FileRouteTypes {
     | '/payroll'
     | '/pto'
     | '/time-entries'
+    | '/api/public/kiosk/bootstrap'
+    | '/api/public/kiosk/punch'
+    | '/api/public/kiosk/status'
+    | '/api/public/kiosk/verify-pin'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +167,10 @@ export interface RootRouteChildren {
   PayrollRoute: typeof PayrollRoute
   PtoRoute: typeof PtoRoute
   TimeEntriesRoute: typeof TimeEntriesRoute
+  ApiPublicKioskBootstrapRoute: typeof ApiPublicKioskBootstrapRoute
+  ApiPublicKioskPunchRoute: typeof ApiPublicKioskPunchRoute
+  ApiPublicKioskStatusRoute: typeof ApiPublicKioskStatusRoute
+  ApiPublicKioskVerifyPinRoute: typeof ApiPublicKioskVerifyPinRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +224,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimeEntriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/kiosk/bootstrap': {
+      id: '/api/public/kiosk/bootstrap'
+      path: '/api/public/kiosk/bootstrap'
+      fullPath: '/api/public/kiosk/bootstrap'
+      preLoaderRoute: typeof ApiPublicKioskBootstrapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/kiosk/punch': {
+      id: '/api/public/kiosk/punch'
+      path: '/api/public/kiosk/punch'
+      fullPath: '/api/public/kiosk/punch'
+      preLoaderRoute: typeof ApiPublicKioskPunchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/kiosk/status': {
+      id: '/api/public/kiosk/status'
+      path: '/api/public/kiosk/status'
+      fullPath: '/api/public/kiosk/status'
+      preLoaderRoute: typeof ApiPublicKioskStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/kiosk/verify-pin': {
+      id: '/api/public/kiosk/verify-pin'
+      path: '/api/public/kiosk/verify-pin'
+      fullPath: '/api/public/kiosk/verify-pin'
+      preLoaderRoute: typeof ApiPublicKioskVerifyPinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +263,10 @@ const rootRouteChildren: RootRouteChildren = {
   PayrollRoute: PayrollRoute,
   PtoRoute: PtoRoute,
   TimeEntriesRoute: TimeEntriesRoute,
+  ApiPublicKioskBootstrapRoute: ApiPublicKioskBootstrapRoute,
+  ApiPublicKioskPunchRoute: ApiPublicKioskPunchRoute,
+  ApiPublicKioskStatusRoute: ApiPublicKioskStatusRoute,
+  ApiPublicKioskVerifyPinRoute: ApiPublicKioskVerifyPinRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

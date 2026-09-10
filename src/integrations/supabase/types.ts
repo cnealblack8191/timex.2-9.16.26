@@ -130,6 +130,7 @@ export type Database = {
       }
       time_entries: {
         Row: {
+          client_punch_id: string | null
           clock_in: string | null
           clock_out: string | null
           created_at: string
@@ -141,9 +142,11 @@ export type Database = {
           job_overridden: boolean
           manual_hours: number | null
           notes: string | null
+          source: string
           work_date: string
         }
         Insert: {
+          client_punch_id?: string | null
           clock_in?: string | null
           clock_out?: string | null
           created_at?: string
@@ -155,9 +158,11 @@ export type Database = {
           job_overridden?: boolean
           manual_hours?: number | null
           notes?: string | null
+          source?: string
           work_date?: string
         }
         Update: {
+          client_punch_id?: string | null
           clock_in?: string | null
           clock_out?: string | null
           created_at?: string
@@ -169,6 +174,7 @@ export type Database = {
           job_overridden?: boolean
           manual_hours?: number | null
           notes?: string | null
+          source?: string
           work_date?: string
         }
         Relationships: [

@@ -181,10 +181,21 @@ export type PunchInput = {
   action: "in" | "out";
   at: string;
   job_overridden: boolean;
+  /** Device-generated id so a resent punch is never recorded twice. */
+  client_punch_id?: string;
 };
 
 /** Applies a punch. Returns a short human-readable confirmation. */
 export async function applyPunch(punch: PunchInput) {
+  if (punch.client_punch_id) {
+    const { data: dupe } = await supabase
+      .from("time_entries")
+      .select("id")
+      .eq("client_punch_id", punch.client_punch_id)
+      .maybeSingle();
+    if (dupe) return "Already recorded";
+  }
+
   const { data: open, error: openError } = await supabase
     .from("time_entries")
     .select("*")
@@ -200,7 +211,7 @@ export async function applyPunch(punch: PunchInput) {
     if (!openEntry) throw new Error("No open punch to close — you are not clocked in.");
     const { error } = await supabase
       .from("time_entries")
-      .update({ clock_out: punch.at })
+      .update({ clock_out: punch.at, client_punch_id: punch.client_punch_id ?? null })
       .eq("id", openEntry.id);
     if (error) throw error;
     return "Clocked out";
@@ -223,6 +234,8 @@ export async function applyPunch(punch: PunchInput) {
     clock_in: punch.at,
     entry_type: "work",
     job_overridden: punch.job_overridden,
+    client_punch_id: punch.client_punch_id ?? null,
+    source: "kiosk-web",
   });
   if (error) throw error;
   return openEntry ? "Switched jobs — clocked in" : "Clocked in";
