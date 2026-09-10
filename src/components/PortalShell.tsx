@@ -4,7 +4,8 @@ import { useLiveTimekeeping } from "@/hooks/use-timekeeping";
 import eciLogo from "@/assets/eci-logo.png.asset.json";
 
 const NAV = [
-  { to: "/", label: "Operations" },
+  { to: "/", label: "Home" },
+  { to: "/operations", label: "Operations" },
   { to: "/time-entries", label: "Time Entries" },
   { to: "/assignments", label: "Assignments" },
   { to: "/pto", label: "PTO & Vacation" },

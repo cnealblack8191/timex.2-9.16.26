@@ -14,6 +14,7 @@ import { Route as AdjustmentsRouteImport } from './routes/adjustments'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as KioskRouteImport } from './routes/kiosk'
+import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as PayrollRouteImport } from './routes/payroll'
 import { Route as PtoRouteImport } from './routes/pto'
 import { Route as TimeEntriesRouteImport } from './routes/time-entries'
@@ -45,6 +46,11 @@ const AssignmentsRoute = AssignmentsRouteImport.update({
 const KioskRoute = KioskRouteImport.update({
   id: '/kiosk',
   path: '/kiosk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperationsRoute = OperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PayrollRoute = PayrollRouteImport.update({
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
+  '/operations': typeof OperationsRoute
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
+  '/operations': typeof OperationsRoute
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
+  '/operations': typeof OperationsRoute
   '/payroll': typeof PayrollRoute
   '/pto': typeof PtoRoute
   '/time-entries': typeof TimeEntriesRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assignments'
     | '/kiosk'
+    | '/operations'
     | '/payroll'
     | '/pto'
     | '/time-entries'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assignments'
     | '/kiosk'
+    | '/operations'
     | '/payroll'
     | '/pto'
     | '/time-entries'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assignments'
     | '/kiosk'
+    | '/operations'
     | '/payroll'
     | '/pto'
     | '/time-entries'
@@ -177,6 +189,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AssignmentsRoute: typeof AssignmentsRoute
   KioskRoute: typeof KioskRoute
+  OperationsRoute: typeof OperationsRoute
   PayrollRoute: typeof PayrollRoute
   PtoRoute: typeof PtoRoute
   TimeEntriesRoute: typeof TimeEntriesRoute
@@ -221,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/kiosk'
       fullPath: '/kiosk'
       preLoaderRoute: typeof KioskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operations': {
+      id: '/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof OperationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payroll': {
@@ -281,6 +301,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AssignmentsRoute: AssignmentsRoute,
   KioskRoute: KioskRoute,
+  OperationsRoute: OperationsRoute,
   PayrollRoute: PayrollRoute,
   PtoRoute: PtoRoute,
   TimeEntriesRoute: TimeEntriesRoute,
