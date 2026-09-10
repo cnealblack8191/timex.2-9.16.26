@@ -313,7 +313,6 @@ function Operations() {
             >
               <span>Open the kiosk</span>
             </Link>
-            <KioskCodePanel />
           </div>
           <div className="col-span-12 grid place-items-center py-4 md:col-span-7">
             <div className="w-full max-w-[380px] rounded-[26px] bg-kiosk p-5 text-primary-foreground ring-1 ring-ink/40">
