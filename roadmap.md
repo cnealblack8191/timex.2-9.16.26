@@ -13,6 +13,8 @@
 - [x] Weekly hours review with 40-hour overtime flags
 - [x] Payroll CSV and PDF downloads
 - [x] Ensure an employee selection immediately populates their assigned job
+- [x] Code-protected Adjustments screen on the kiosk (edit times/job, add missing punches, reason required)
+- [x] Change the kiosk adjustment code from the dashboard
 
 Open: no manager login yet — the portal is open to anyone with the link.
 Employee data is sample data until the existing ECI system is connected.
