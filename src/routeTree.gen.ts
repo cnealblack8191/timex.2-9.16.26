@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdjustmentsRouteImport } from './routes/adjustments'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AssignmentsRouteImport } from './routes/assignments'
 import { Route as KioskRouteImport } from './routes/kiosk'
 import { Route as PayrollRouteImport } from './routes/payroll'
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdjustmentsRoute = AdjustmentsRouteImport.update({
   id: '/adjustments',
   path: '/adjustments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssignmentsRoute = AssignmentsRouteImport.update({
@@ -80,6 +86,7 @@ const ApiPublicKioskVerifyPinRoute = ApiPublicKioskVerifyPinRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
+  '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
   '/payroll': typeof PayrollRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
+  '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
   '/payroll': typeof PayrollRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
+  '/admin': typeof AdminRoute
   '/assignments': typeof AssignmentsRoute
   '/kiosk': typeof KioskRoute
   '/payroll': typeof PayrollRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/adjustments'
+    | '/admin'
     | '/assignments'
     | '/kiosk'
     | '/payroll'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/adjustments'
+    | '/admin'
     | '/assignments'
     | '/kiosk'
     | '/payroll'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/adjustments'
+    | '/admin'
     | '/assignments'
     | '/kiosk'
     | '/payroll'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdjustmentsRoute: typeof AdjustmentsRoute
+  AdminRoute: typeof AdminRoute
   AssignmentsRoute: typeof AssignmentsRoute
   KioskRoute: typeof KioskRoute
   PayrollRoute: typeof PayrollRoute
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/adjustments'
       fullPath: '/adjustments'
       preLoaderRoute: typeof AdjustmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assignments': {
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdjustmentsRoute: AdjustmentsRoute,
+  AdminRoute: AdminRoute,
   AssignmentsRoute: AssignmentsRoute,
   KioskRoute: KioskRoute,
   PayrollRoute: PayrollRoute,
