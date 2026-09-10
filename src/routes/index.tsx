@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
+import eciLogo from "@/assets/eci-logo.png.asset.json";
 import {
   useDivisions,
   useEmployees,
@@ -317,9 +318,11 @@ function Operations() {
             <div className="w-full max-w-[380px] rounded-[26px] bg-kiosk p-5 text-primary-foreground ring-1 ring-ink/40">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-7 w-7 -skew-x-6 place-items-center rounded bg-amber font-display text-xs text-ink">
-                    EC
-                  </div>
+                  <img
+                    src={eciLogo.url}
+                    alt="Electrical Contractor Inc."
+                    className="h-8 w-8 rounded object-contain"
+                  />
                   <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
                     Punch
                   </span>
