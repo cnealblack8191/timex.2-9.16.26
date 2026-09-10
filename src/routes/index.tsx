@@ -59,7 +59,7 @@ const TILES = [
 
 function Home() {
   return (
-    <div className="page-wash flex min-h-screen w-full flex-col items-center bg-background px-6 py-10 text-foreground">
+    <div className="page-wash flex min-h-screen w-full flex-col items-center justify-center bg-background px-6 py-10 text-foreground">
       <img
         src={eciLogo.url}
         alt="Electrical Contractor Inc."
