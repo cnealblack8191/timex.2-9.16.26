@@ -21,7 +21,7 @@
 - [x] Admin section: add/edit divisions, jobs, employees
 - [x] Admin section: change kiosk supervisor adjustment code
 - [x] Move kiosk code control from Operations dashboard to Admin section
-- [ ] Remove kiosk preview card from Operations dashboard
+- [x] Remove kiosk preview card from Operations dashboard
 
 Architecture: the dashboard (/) is office-only. The field kiosk exists twice:
 as the web screen at /kiosk (still fully supported, online and offline) and as
