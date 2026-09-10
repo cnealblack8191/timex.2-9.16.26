@@ -290,6 +290,9 @@ function PayrollPage() {
                     <td className="px-3 py-2.5 text-right font-mono text-steel">
                       {r.ptoHours ? r.ptoHours.toFixed(2) : "—"}
                     </td>
+                    <td className="px-3 py-2.5 text-right font-mono text-steel">
+                      {r.vacationHours ? r.vacationHours.toFixed(2) : "—"}
+                    </td>
                     <td className="px-4 py-2.5 text-right">
                       <span
                         className={`rounded px-2 py-1 font-mono font-bold ${
