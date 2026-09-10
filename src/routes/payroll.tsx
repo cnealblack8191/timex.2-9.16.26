@@ -76,7 +76,7 @@ function PayrollPage() {
   }, [employees, entries, days]);
 
   const grand = rows.reduce((sum, r) => sum + r.total, 0);
-  const otPeople = rows.filter((r) => r.total > OVERTIME_THRESHOLD);
+  const otPeople = rows.filter((r) => r.workTotal > OVERTIME_THRESHOLD);
 
   function exportCsv() {
     const header = [
