@@ -11,6 +11,8 @@ import {
   useWeekEntries,
 } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { changeKioskPin } from "@/lib/kiosk-pin.functions";
 import {
   entryHours,
   formatTime,
