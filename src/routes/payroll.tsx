@@ -234,7 +234,7 @@ function PayrollPage() {
         </>
       }
     >
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {[
           { label: "Total hours", value: grand.toFixed(1) },
           { label: "Employees paid", value: String(rows.length) },
@@ -244,6 +244,14 @@ function PayrollPage() {
             value: otPeople
               .reduce((sum, r) => sum + (r.total - OVERTIME_THRESHOLD), 0)
               .toFixed(1),
+          },
+          {
+            label: "PTO hours",
+            value: rows.reduce((sum, r) => sum + r.ptoHours, 0).toFixed(1),
+          },
+          {
+            label: "Vacation hours",
+            value: rows.reduce((sum, r) => sum + r.vacationHours, 0).toFixed(1),
           },
         ].map((stat) => (
           <Panel key={stat.label} className="animate-rise p-4">
