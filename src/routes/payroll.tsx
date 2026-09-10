@@ -253,15 +253,15 @@ function PayrollPage() {
         </>
       }
     >
-      <div className="mb-6 flex flex-col items-center justify-center">
+      <div className="mb-2 flex flex-col items-center justify-center">
         <img
           src={logoAsset.url}
           alt="Electrical Contractor Inc. logo"
-          className="h-24 w-auto object-contain"
+          className="h-20 w-auto object-contain"
         />
       </div>
 
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="mb-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {[
           { label: "Total hours", value: grand.toFixed(1) },
           { label: "Employees paid", value: String(rows.length) },

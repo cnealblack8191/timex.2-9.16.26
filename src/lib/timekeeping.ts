@@ -152,6 +152,12 @@ export async function fetchEmployees() {
   return (data ?? []) as Employee[];
 }
 
+export async function fetchAllEmployees() {
+  const { data, error } = await supabase.from("employees").select("*").order("last_name");
+  if (error) throw error;
+  return (data ?? []) as Employee[];
+}
+
 export async function fetchEntriesBetween(from: string, to: string) {
   const { data, error } = await supabase
     .from("time_entries")
