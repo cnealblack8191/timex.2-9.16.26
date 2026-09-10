@@ -147,7 +147,7 @@ function EmployeesSection() {
       </Panel>
 
       {editing && (
-        <Panel className="col-span-12 xl:col-span-4">
+        <Panel className="col-span-12 self-start xl:col-span-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit employee" : "Add employee"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
@@ -215,7 +215,7 @@ function EmployeesSection() {
             <button
               onClick={save}
               disabled={saving || !editing.first_name || !editing.last_name}
-              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
+              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
             >
               <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add employee"}</span>
             </button>
@@ -303,7 +303,7 @@ function JobsSection() {
       </Panel>
 
       {editing && (
-        <Panel className="col-span-12 xl:col-span-4">
+        <Panel className="col-span-12 self-start xl:col-span-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit job" : "Add job"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
@@ -349,7 +349,7 @@ function JobsSection() {
             <button
               onClick={save}
               disabled={saving || !editing.number || !editing.name}
-              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
+              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
             >
               <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add job"}</span>
             </button>
@@ -428,7 +428,7 @@ function DivisionsSection() {
       </Panel>
 
       {editing && (
-        <Panel className="col-span-12 xl:col-span-4">
+        <Panel className="col-span-12 self-start xl:col-span-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit division" : "Add division"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
@@ -455,7 +455,7 @@ function DivisionsSection() {
             <button
               onClick={save}
               disabled={saving || !editing.name || !editing.code}
-              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
+              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
             >
               <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add division"}</span>
             </button>
