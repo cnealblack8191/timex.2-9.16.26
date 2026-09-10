@@ -161,7 +161,9 @@ function PayrollPage() {
         "TOTAL",
         "",
         "",
-        ...days.map((_, index) => rows.reduce((sum, row) => sum + row.perDay[index], 0).toFixed(2)),
+        ...days.map((_, index) =>
+          rows.reduce((sum, row) => sum + (row.perDay[index] ?? 0), 0).toFixed(2),
+        ),
         rows.reduce((sum, row) => sum + row.ptoHours, 0).toFixed(2),
         rows.reduce((sum, row) => sum + Math.min(row.total, OVERTIME_THRESHOLD), 0).toFixed(2),
         overtimeHours.toFixed(2),
