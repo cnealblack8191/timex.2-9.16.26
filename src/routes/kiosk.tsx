@@ -145,7 +145,6 @@ function Kiosk() {
       setBusy(false);
       setEmployeeId("");
       setJobId("");
-      setOverride(false);
       window.setTimeout(() => setResult(null), 6000);
     }
   }
