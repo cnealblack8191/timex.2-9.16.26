@@ -69,7 +69,7 @@ function PayrollPage() {
           .filter((e) => e.entry_type === "vacation")
           .reduce((sum, e) => sum + entryHours(e), 0);
         const total = workTotal + ptoHours + vacationHours;
-        return { emp, perDay, total, ptoHours, vacationHours };
+        return { emp, perDay, workTotal, total, ptoHours, vacationHours };
       })
       .filter((r) => r.total > 0)
       .sort((a, b) => b.total - a.total);
