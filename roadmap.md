@@ -16,12 +16,15 @@
 - [x] Ensure an employee selection immediately populates their assigned job
 - [x] Code-protected Adjustments screen on the kiosk (edit times/job, add missing punches, reason required)
 - [x] Change the kiosk adjustment code from the dashboard
+- [x] Kiosk API for the native iOS/Android app (bootstrap, punch, status, code check)
+- [x] Duplicate-proof punch sync (device punch id) for both the app and the web kiosk
 
-Architecture: the dashboard (/) is office-only; the kiosk (/kiosk + /adjustments)
-is a self-contained mobile surface meant to be embedded in ECI's existing
-iOS/Android app via a WebView. Kiosk has no dependency on portal UI, works
-offline (punches queue on-device in localStorage and auto-sync on reconnect),
-and portal data updates live via realtime.
+Architecture: the dashboard (/) is office-only. The field kiosk exists twice:
+as the web screen at /kiosk (still fully supported, online and offline) and as
+a documented HTTP API at /api/public/kiosk/* that ECI's existing iOS/Android
+app calls natively. Both write to the same database, so the office dashboard
+updates in real time via realtime. Device calls are authorised with the
+KIOSK_DEVICE_KEY secret in the x-kiosk-key header. API contract: docs/kiosk-api.md.
 
 Open: no manager login yet — the portal is open to anyone with the link.
 Employee data is sample data until the existing ECI system is connected.
