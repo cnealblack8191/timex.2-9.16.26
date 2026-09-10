@@ -303,7 +303,7 @@ function JobsSection() {
       </Panel>
 
       {editing && (
-        <Panel className="col-span-12 xl:col-span-4">
+        <Panel className="col-span-12 self-start xl:col-span-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit job" : "Add job"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
@@ -428,7 +428,7 @@ function DivisionsSection() {
       </Panel>
 
       {editing && (
-        <Panel className="col-span-12 xl:col-span-4">
+        <Panel className="col-span-12 self-start xl:col-span-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit division" : "Add division"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
