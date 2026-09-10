@@ -36,7 +36,13 @@ export const Route = createFileRoute("/api/public/kiosk/punch")({
         const results = [];
         for (const punch of parsed.punches) {
           try {
-            results.push(await applyKioskPunch({ ...punch, source: punch.source ?? "mobile" }));
+            results.push(
+              await applyKioskPunch({
+                ...punch,
+                job_overridden: punch.job_overridden ?? false,
+                source: punch.source ?? "mobile",
+              }),
+            );
           } catch {
             // retryable: the device keeps this punch queued and sends it again
             results.push({
