@@ -281,7 +281,7 @@ function PayrollPage() {
             </thead>
             <tbody>
               {rows.map((r) => {
-                const ot = r.total > OVERTIME_THRESHOLD;
+                const ot = r.workTotal > OVERTIME_THRESHOLD;
                 return (
                   <tr key={r.emp.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
                     <td className="px-4 py-2.5">
