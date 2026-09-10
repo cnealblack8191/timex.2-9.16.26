@@ -181,10 +181,21 @@ export type PunchInput = {
   action: "in" | "out";
   at: string;
   job_overridden: boolean;
+  /** Device-generated id so a resent punch is never recorded twice. */
+  client_punch_id?: string;
 };
 
 /** Applies a punch. Returns a short human-readable confirmation. */
 export async function applyPunch(punch: PunchInput) {
+  if (punch.client_punch_id) {
+    const { data: dupe } = await supabase
+      .from("time_entries")
+      .select("id")
+      .eq("client_punch_id", punch.client_punch_id)
+      .maybeSingle();
+    if (dupe) return "Already recorded";
+  }
+
   const { data: open, error: openError } = await supabase
     .from("time_entries")
     .select("*")
