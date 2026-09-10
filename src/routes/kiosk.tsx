@@ -5,6 +5,7 @@ import { useEmployees, useJobs, useOpenEntries } from "@/hooks/use-timekeeping";
 import { applyPunch, fullName, jobLabel, type Employee, type Job } from "@/lib/timekeeping";
 import { enqueue, flushQueue, getQueue } from "@/lib/offline-queue";
 import eciLogo from "@/assets/eci-logo.png.asset.json";
+import { Lock } from "lucide-react";
 
 export const Route = createFileRoute("/kiosk")({
   ssr: false,
