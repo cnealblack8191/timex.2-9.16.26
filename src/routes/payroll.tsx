@@ -91,7 +91,7 @@ function PayrollPage() {
       "Overtime Hours",
     ];
     const lines = rows.map((r) => {
-      const ot = Math.max(0, r.total - OVERTIME_THRESHOLD);
+      const ot = Math.max(0, r.workTotal - OVERTIME_THRESHOLD);
       return [
         fullName(r.emp),
         divisionById.get(r.emp.division_id ?? "")?.name ?? "",
@@ -100,7 +100,7 @@ function PayrollPage() {
         r.ptoHours.toFixed(2),
         r.vacationHours.toFixed(2),
         r.total.toFixed(2),
-        (r.total - ot).toFixed(2),
+        (r.workTotal - ot).toFixed(2),
         ot.toFixed(2),
       ];
     });
