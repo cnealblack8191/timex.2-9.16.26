@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  fetchAllEmployees,
   fetchDivisions,
   fetchEmployees,
   fetchEntriesBetween,
@@ -25,6 +26,13 @@ export function useLiveTimekeeping() {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "employees" }, () => {
         queryClient.invalidateQueries({ queryKey: ["employees"] });
+        queryClient.invalidateQueries({ queryKey: ["all-employees"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "divisions" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["divisions"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "jobs" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["jobs"] });
       })
       .subscribe();
 
@@ -41,6 +49,9 @@ export const useJobs = () => useQuery({ queryKey: ["jobs"], queryFn: fetchJobs }
 
 export const useEmployees = () =>
   useQuery({ queryKey: ["employees"], queryFn: fetchEmployees });
+
+export const useAllEmployees = () =>
+  useQuery({ queryKey: ["all-employees"], queryFn: fetchAllEmployees });
 
 export const useOpenEntries = () =>
   useQuery({ queryKey: ["open-entries"], queryFn: fetchOpenEntries, refetchInterval: 30000 });
