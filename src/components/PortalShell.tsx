@@ -35,7 +35,7 @@ export function PortalShell({
               className="h-10 w-10 rounded-md object-contain"
             />
             <div className="leading-none">
-              <div className="font-display text-[15px] tracking-wide">ECI TIMEKEEPING</div>
+              <div className="font-display text-[15px] tracking-wide">TIMEX</div>
               <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
                 Electrical Contractor Inc.
               </div>

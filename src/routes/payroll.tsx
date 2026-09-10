@@ -26,9 +26,9 @@ import {
 export const Route = createFileRoute("/payroll")({
   head: () => ({
     meta: [
-      { title: "Payroll — ECI Timekeeping" },
+      { title: "Payroll — TimeX" },
       { name: "description", content: "Weekly hours review with overtime flags and payroll export." },
-      { property: "og:title", content: "Payroll — ECI Timekeeping" },
+      { property: "og:title", content: "Payroll — TimeX" },
       { property: "og:description", content: "Weekly hours review with overtime flags and payroll export." },
     ],
   }),

@@ -27,9 +27,9 @@ import {
 export const Route = createFileRoute("/time-entries")({
   head: () => ({
     meta: [
-      { title: "Time Entries — ECI Timekeeping" },
+      { title: "Time Entries — TimeX" },
       { name: "description", content: "Review and correct employee time by day, week, employee and job." },
-      { property: "og:title", content: "Time Entries — ECI Timekeeping" },
+      { property: "og:title", content: "Time Entries — TimeX" },
       { property: "og:description", content: "Review and correct employee time by day, week, employee and job." },
     ],
   }),
