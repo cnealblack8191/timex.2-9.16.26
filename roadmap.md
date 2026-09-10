@@ -12,7 +12,7 @@
 - [x] PTO & vacation pay for one or many employees
 - [x] Weekly hours review with 40-hour overtime flags
 - [x] Payroll CSV and PDF downloads
-- [ ] Ensure an employee selection immediately populates their assigned job
+- [x] Ensure an employee selection immediately populates their assigned job
 
 Open: no manager login yet — the portal is open to anyone with the link.
 Employee data is sample data until the existing ECI system is connected.
