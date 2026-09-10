@@ -267,6 +267,7 @@ function PayrollPage() {
                   </th>
                 ))}
                 <th className="px-3 py-2.5 text-right font-semibold">PTO</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Vacation</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Total</th>
               </tr>
             </thead>
