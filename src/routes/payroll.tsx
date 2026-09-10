@@ -169,6 +169,7 @@ function PayrollPage() {
         overtimeHours.toFixed(2),
         grand.toFixed(2),
       ]],
+      showFoot: "lastPage",
       theme: "grid",
       styles: { font: "helvetica", fontSize: 7, cellPadding: 3, textColor: [28, 35, 43] },
       headStyles: { fillColor: [28, 35, 43], textColor: [255, 255, 255], fontStyle: "bold" },
