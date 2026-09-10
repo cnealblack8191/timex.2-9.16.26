@@ -294,11 +294,10 @@ function Kiosk() {
           )}
         </div>
 
-        <div className="mt-6">
+        <div className="mt-auto pt-8">
           <Link
             to="/adjustments"
             className="flex items-center justify-between rounded-[22px] bg-primary-foreground/5 px-5 py-4 ring-1 ring-primary-foreground/15 transition-colors active:bg-primary-foreground/10"
-          >
             <div className="flex items-center gap-3">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-foreground/10 text-primary-foreground/70">
                 <Lock className="h-4 w-4" />
