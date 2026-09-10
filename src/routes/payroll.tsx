@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, FileSpreadsheet, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
+import logoAsset from "@/assets/eci-logo.png.asset.json";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,18 @@ import {
   weekStart,
   weekNumber,
 } from "@/lib/timekeeping";
+
+async function imageToBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to load logo: ${res.status}`);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 export const Route = createFileRoute("/payroll")({
   head: () => ({
@@ -126,20 +139,26 @@ function PayrollPage() {
       0,
     );
 
+    const logoBase64 = await imageToBase64(logoAsset.url);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const logoWidth = 80;
+    const logoHeight = logoWidth * (164 / 150);
+    doc.addImage(logoBase64, "PNG", (pageWidth - logoWidth) / 2, 18, logoWidth, logoHeight);
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("TimeX Payroll Breakdown", 36, 38);
+    doc.text("TimeX Payroll Breakdown", 36, 118);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 55);
+    doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 135);
     doc.text(
       `Employees: ${rows.length}    Total hours: ${grand.toFixed(2)}    Overtime hours: ${overtimeHours.toFixed(2)}`,
       36,
-      69,
+      149,
     );
 
     autoTable(doc, {
-      startY: 83,
+      startY: 163,
       head: [[
         "Employee",
         "Division",
@@ -234,6 +253,14 @@ function PayrollPage() {
         </>
       }
     >
+      <div className="mb-6 flex flex-col items-center justify-center">
+        <img
+          src={logoAsset.url}
+          alt="Electrical Contractor Inc. logo"
+          className="h-24 w-auto object-contain"
+        />
+      </div>
+
       <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {[
           { label: "Total hours", value: grand.toFixed(1) },
