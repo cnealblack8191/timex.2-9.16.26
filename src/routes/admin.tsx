@@ -14,6 +14,8 @@ export const Route = createFileRoute("/admin")({
       { name: "description", content: "Manage divisions, jobs, employees, and kiosk settings." },
       { property: "og:title", content: "Admin — TimeX" },
       { property: "og:description", content: "Manage divisions, jobs, employees, and kiosk settings." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AdminPage,
