@@ -240,24 +240,13 @@ function Kiosk() {
                   className="mt-2 w-full appearance-none rounded-xl bg-primary-foreground/10 px-4 py-5 text-[19px] font-bold text-primary-foreground ring-1 ring-primary-foreground/15 disabled:opacity-40"
                 >
                   <option value="">Select a job</option>
-                  {jobChoices.map((j) => (
+                  {jobs.map((j) => (
                     <option key={j.id} value={j.id} className="text-ink">
                       {jobLabel(j)}
                     </option>
                   ))}
                 </select>
               </label>
-
-              {employeeId && (
-                <button
-                  onClick={() => setOverride((v) => !v)}
-                  className="mt-3 w-full rounded-xl bg-primary-foreground/5 px-4 py-3 text-left text-[13px] font-semibold text-amber ring-1 ring-primary-foreground/10"
-                >
-                  {override
-                    ? "Showing all jobs — tap to use the assigned job"
-                    : "Wrong job? Tap to choose from all jobs"}
-                </button>
-              )}
 
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <button
