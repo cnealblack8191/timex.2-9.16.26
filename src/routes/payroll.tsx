@@ -104,7 +104,7 @@ function PayrollPage() {
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `eci-payroll-${from}-to-${to}.csv`;
+    link.download = `timex-payroll-${from}-to-${to}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -122,7 +122,7 @@ function PayrollPage() {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("ECI Payroll Breakdown", 36, 38);
+    doc.text("TimeX Payroll Breakdown", 36, 38);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 55);
@@ -183,11 +183,11 @@ function PayrollPage() {
       didDrawPage: ({ pageNumber }) => {
         doc.setFontSize(7);
         doc.setTextColor(100);
-        doc.text(`ECI Timekeeping · Page ${pageNumber}`, 36, doc.internal.pageSize.height - 18);
+        doc.text(`TimeX · Page ${pageNumber}`, 36, doc.internal.pageSize.height - 18);
       },
     });
 
-    doc.save(`eci-payroll-${from}-to-${to}.pdf`);
+    doc.save(`timex-payroll-${from}-to-${to}.pdf`);
   }
 
   return (
