@@ -164,8 +164,8 @@ function Kiosk() {
   }
 
   return (
-    <div className="min-h-screen bg-kiosk px-4 py-5 text-primary-foreground sm:px-6">
-      <div className="mx-auto flex min-h-[calc(100vh-40px)] w-full max-w-[520px] flex-col">
+    <div className="min-h-[100dvh] bg-kiosk px-4 py-5 text-primary-foreground sm:px-6 landscape:py-3">
+      <div className="mx-auto flex min-h-[calc(100dvh-40px)] w-full max-w-[520px] flex-col landscape:max-w-[920px]">
         <div>
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2">
