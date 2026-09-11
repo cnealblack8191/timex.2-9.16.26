@@ -389,11 +389,37 @@ function TimeEntriesPage() {
             <Panel className="p-5 text-[13px] text-muted-foreground">
               Pick <span className="font-semibold text-steel">Edit</span> on any row to correct the
               times, change the job, or add a note. Corrections are marked so you can see what was
-              adjusted.
+              adjusted. Punch photos are only loaded when you click{" "}
+              <span className="font-semibold text-steel">In</span> or{" "}
+              <span className="font-semibold text-steel">Out</span>, and are deleted after{" "}
+              {PHOTO_RETENTION_DAYS} days.
             </Panel>
           )}
         </div>
       </div>
+
+      {photoLoading && !photo && (
+        <div className="fixed bottom-5 right-5 rounded-lg bg-ink px-3 py-2 text-[12px] text-primary-foreground">
+          Loading photo…
+        </div>
+      )}
+
+      {photo && (
+        <div
+          onClick={() => setPhoto(null)}
+          className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-6"
+        >
+          <div className="max-w-[420px] rounded-xl bg-card p-3 shadow-xl">
+            <img src={photo.url} alt={photo.label} className="w-full rounded-lg" />
+            <div className="mt-2 flex items-center justify-between text-[12px] text-muted-foreground">
+              <span className="font-semibold text-steel">{photo.label}</span>
+              <button onClick={() => setPhoto(null)} className="font-semibold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PortalShell>
   );
 }
