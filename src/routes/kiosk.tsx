@@ -223,7 +223,7 @@ function Kiosk() {
               </button>
             </div>
           ) : (
-            <div className="rounded-[26px] bg-primary-foreground/5 p-5 ring-1 ring-primary-foreground/10">
+            <div className="rounded-[26px] bg-primary-foreground/5 p-5 ring-1 ring-primary-foreground/10 landscape:grid landscape:grid-cols-2 landscape:gap-x-6">
               <label className="block">
                 <span className="text-[12px] font-semibold uppercase tracking-wide text-primary-foreground/50">
                   Your name
