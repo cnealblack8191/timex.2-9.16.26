@@ -22,6 +22,9 @@
 - [x] Admin section: change kiosk supervisor adjustment code
 - [x] Move kiosk code control from Operations dashboard to Admin section
 - [x] Remove kiosk preview card from Operations dashboard
+- [x] Web kiosk works in portrait and landscape (device rotation)
+- [ ] Developer hand-off: document the web kiosk as the emergency backup kiosk
+
 
 Architecture: the dashboard (/) is office-only. The field kiosk exists twice:
 as the web screen at /kiosk (still fully supported, online and offline) and as
