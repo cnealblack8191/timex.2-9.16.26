@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getPunchPhotoUrl,
+  purgeOldPunchPhotos,
+  PHOTO_RETENTION_DAYS,
+} from "@/lib/punch-photos.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import {
@@ -46,6 +51,25 @@ function TimeEntriesPage() {
   const [editing, setEditing] = useState<TimeEntry | null>(null);
   const [draft, setDraft] = useState({ clock_in: "", clock_out: "", job_id: "", notes: "" });
   const [saving, setSaving] = useState(false);
+  const [photo, setPhoto] = useState<{ url: string; label: string } | null>(null);
+  const [photoLoading, setPhotoLoading] = useState(false);
+
+  // photos older than the retention window are cleared out in the background
+  useEffect(() => {
+    void purgeOldPunchPhotos().catch(() => {});
+  }, []);
+
+  async function showPhoto(entryId: string, kind: "in" | "out") {
+    setPhotoLoading(true);
+    try {
+      const { url } = await getPunchPhotoUrl({ data: { entry_id: entryId, kind } });
+      if (url) setPhoto({ url, label: kind === "in" ? "Clock in photo" : "Clock out photo" });
+    } catch {
+      // nothing to show
+    } finally {
+      setPhotoLoading(false);
+    }
+  }
 
   const anchorDate = useMemo(() => parseDateKey(anchor), [anchor]);
 
@@ -192,6 +216,7 @@ function TimeEntriesPage() {
                   <th className="px-3 py-2.5 font-semibold">In</th>
                   <th className="px-3 py-2.5 font-semibold">Out</th>
                   <th className="px-3 py-2.5 text-right font-semibold">Hrs</th>
+                  <th className="px-3 py-2.5 font-semibold">Photos</th>
                   <th className="px-3 py-2.5" />
                 </tr>
               </thead>
@@ -227,6 +252,30 @@ function TimeEntriesPage() {
                       <td className="px-3 py-3 text-right font-mono font-semibold">
                         {entryHours(entry).toFixed(2)}
                       </td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        {entry.clock_in_photo || entry.clock_out_photo ? (
+                          <span className="flex gap-2">
+                            {entry.clock_in_photo && (
+                              <button
+                                onClick={() => showPhoto(entry.id, "in")}
+                                className="text-[12px] font-semibold text-steel underline decoration-dotted"
+                              >
+                                In
+                              </button>
+                            )}
+                            {entry.clock_out_photo && (
+                              <button
+                                onClick={() => showPhoto(entry.id, "out")}
+                                className="text-[12px] font-semibold text-steel underline decoration-dotted"
+                              >
+                                Out
+                              </button>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="px-3 py-3 text-right">
                         <button
                           onClick={() => startEdit(entry)}
@@ -240,7 +289,7 @@ function TimeEntriesPage() {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-[13px] text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-10 text-center text-[13px] text-muted-foreground">
                       No time entries for this selection.
                     </td>
                   </tr>
@@ -340,11 +389,37 @@ function TimeEntriesPage() {
             <Panel className="p-5 text-[13px] text-muted-foreground">
               Pick <span className="font-semibold text-steel">Edit</span> on any row to correct the
               times, change the job, or add a note. Corrections are marked so you can see what was
-              adjusted.
+              adjusted. Punch photos are only loaded when you click{" "}
+              <span className="font-semibold text-steel">In</span> or{" "}
+              <span className="font-semibold text-steel">Out</span>, and are deleted after{" "}
+              {PHOTO_RETENTION_DAYS} days.
             </Panel>
           )}
         </div>
       </div>
+
+      {photoLoading && !photo && (
+        <div className="fixed bottom-5 right-5 rounded-lg bg-ink px-3 py-2 text-[12px] text-primary-foreground">
+          Loading photo…
+        </div>
+      )}
+
+      {photo && (
+        <div
+          onClick={() => setPhoto(null)}
+          className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-6"
+        >
+          <div className="max-w-[420px] rounded-xl bg-card p-3 shadow-xl">
+            <img src={photo.url} alt={photo.label} className="w-full rounded-lg" />
+            <div className="mt-2 flex items-center justify-between text-[12px] text-muted-foreground">
+              <span className="font-semibold text-steel">{photo.label}</span>
+              <button onClick={() => setPhoto(null)} className="font-semibold">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PortalShell>
   );
 }

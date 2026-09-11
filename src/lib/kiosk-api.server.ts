@@ -11,6 +11,8 @@ type PunchBody = {
   at: string;
   job_overridden?: boolean;
   source?: string;
+  /** Optional compressed JPEG, base64 or data URL. */
+  photo?: string | undefined;
 };
 
 function dateKey(iso: string) {
@@ -22,6 +24,24 @@ function dateKey(iso: string) {
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin;
+}
+
+/** Stores a punch photo in the private bucket and links it to the entry. */
+async function storePhoto(entryId: string, kind: "in" | "out", photo: string) {
+  const db = await admin();
+  const base64 = photo.includes(",") ? photo.slice(photo.indexOf(",") + 1) : photo;
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  const path = `${new Date().toISOString().slice(0, 10)}/${entryId}-${kind}.jpg`;
+  const { error } = await db.storage
+    .from("punch-photos")
+    .upload(path, bytes, { contentType: "image/jpeg", upsert: true });
+  if (error) return;
+  await db
+    .from("time_entries")
+    .update(kind === "in" ? { clock_in_photo: path } : { clock_out_photo: path })
+    .eq("id", entryId);
 }
 
 /** Everything a device needs to run offline: divisions, jobs and active employees. */
@@ -104,6 +124,7 @@ export async function applyKioskPunch(punch: PunchBody) {
       .update({ clock_out: punch.at, client_punch_id: punch.punch_id })
       .eq("id", open.id);
     if (error) throw error;
+    if (punch.photo) await storePhoto(open.id, "out", punch.photo);
     return { punch_id: punch.punch_id, ok: true, duplicate: false, message: "Clocked out" };
   }
 
@@ -115,17 +136,22 @@ export async function applyKioskPunch(punch: PunchBody) {
     if (error) throw error;
   }
 
-  const { error } = await db.from("time_entries").insert({
-    employee_id: punch.employee_id,
-    job_id: punch.job_id,
-    work_date: dateKey(punch.at),
-    clock_in: punch.at,
-    entry_type: "work",
-    job_overridden: punch.job_overridden ?? false,
-    client_punch_id: punch.punch_id,
-    source: punch.source ?? "mobile",
-  });
+  const { data: inserted, error } = await db
+    .from("time_entries")
+    .insert({
+      employee_id: punch.employee_id,
+      job_id: punch.job_id,
+      work_date: dateKey(punch.at),
+      clock_in: punch.at,
+      entry_type: "work",
+      job_overridden: punch.job_overridden ?? false,
+      client_punch_id: punch.punch_id,
+      source: punch.source ?? "mobile",
+    })
+    .select("id")
+    .single();
   if (error) throw error;
+  if (punch.photo && inserted) await storePhoto(inserted.id, "in", punch.photo);
 
   return {
     punch_id: punch.punch_id,

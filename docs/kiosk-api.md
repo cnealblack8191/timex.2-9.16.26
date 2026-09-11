@@ -55,11 +55,19 @@ Send one punch or a whole offline queue in a single call.
       "action": "in",
       "at": "2026-09-10T12:04:11.000Z",
       "job_overridden": false,
-      "source": "ios"
+      "source": "ios",
+      "photo": "data:image/jpeg;base64,..."
     }
   ]
 }
 ```
+
+`photo` is optional. Capture a front-camera still at the moment of the punch,
+downscale to ~480px wide, encode JPEG at ~45% quality (target < 60 KB), and send
+it with the punch — including queued offline punches. A punch is never rejected
+because the photo is missing or the camera is blocked. Photos are stored in a
+private bucket, are never shown automatically in the office portal, and are
+deleted automatically after 30 days.
 
 Response:
 

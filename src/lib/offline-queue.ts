@@ -1,8 +1,15 @@
 import { applyPunch, type PunchInput } from "./timekeeping";
+import { savePunchPhoto } from "./punch-photos.functions";
 
 const KEY = "eci-pending-punches";
 
-export type QueuedPunch = PunchInput & { queued_id: string; employee_name: string; job_label: string };
+export type QueuedPunch = PunchInput & {
+  queued_id: string;
+  employee_name: string;
+  job_label: string;
+  /** Compressed snapshot taken when the worker punched, sent once back online. */
+  photo?: string | null;
+};
 
 function read(): QueuedPunch[] {
   if (typeof window === "undefined") return [];
@@ -37,6 +44,15 @@ export async function flushQueue() {
     try {
       await applyPunch(item);
       sent += 1;
+      if (item.photo && item.client_punch_id) {
+        try {
+          await savePunchPhoto({
+            data: { client_punch_id: item.client_punch_id, kind: item.action, data_url: item.photo },
+          });
+        } catch {
+          // the punch itself is safe; a lost photo must not requeue it
+        }
+      }
     } catch {
       remaining.push(item);
     }

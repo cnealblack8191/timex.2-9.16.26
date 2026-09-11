@@ -34,6 +34,8 @@ export type TimeEntry = {
   job_overridden: boolean;
   edited: boolean;
   created_at: string;
+  clock_in_photo?: string | null;
+  clock_out_photo?: string | null;
 };
 
 export const fullName = (e: Employee) => `${e.first_name} ${e.last_name}`;
