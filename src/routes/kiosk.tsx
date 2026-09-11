@@ -242,7 +242,7 @@ function Kiosk() {
                 </select>
               </label>
 
-              <label className="mt-4 block">
+              <label className="mt-4 block landscape:mt-0">
                 <span className="text-[12px] font-semibold uppercase tracking-wide text-primary-foreground/50">
                   Job
                 </span>
@@ -261,25 +261,27 @@ function Kiosk() {
                 </select>
               </label>
 
-              <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="mt-5 grid grid-cols-2 gap-3 landscape:col-span-2 landscape:mt-4">
                 <button
                   onClick={() => punch("in")}
                   disabled={busy || !employeeId || !jobId || isClockedIn}
-                  className="skew-btn rounded-xl bg-amber py-8 font-display text-2xl tracking-wide text-ink transition-transform active:translate-y-1 disabled:opacity-30"
+                  className="skew-btn rounded-xl bg-amber py-8 font-display text-2xl tracking-wide text-ink transition-transform active:translate-y-1 disabled:opacity-30 landscape:py-5"
                 >
                   <span>Clock In</span>
                 </button>
                 <button
                   onClick={() => punch("out")}
                   disabled={busy || !employeeId || !isClockedIn}
-                  className="skew-btn rounded-xl bg-primary-foreground/10 py-8 font-display text-2xl tracking-wide text-primary-foreground ring-1 ring-primary-foreground/20 transition-transform active:translate-y-1 disabled:opacity-30"
+                  className="skew-btn rounded-xl bg-primary-foreground/10 py-8 font-display text-2xl tracking-wide text-primary-foreground ring-1 ring-primary-foreground/20 transition-transform active:translate-y-1 disabled:opacity-30 landscape:py-5"
                 >
                   <span>Clock Out</span>
                 </button>
               </div>
 
+
               {employeeId && (
-                <p className="mt-4 text-center text-[13px] text-primary-foreground/50">
+                <p className="mt-4 text-center text-[13px] text-primary-foreground/50 landscape:col-span-2">
+
                   {isClockedIn
                     ? "You are clocked in right now."
                     : assignedJob
@@ -291,7 +293,7 @@ function Kiosk() {
           )}
         </div>
 
-        <div className="mt-auto pt-8">
+        <div className="mt-auto pt-8 landscape:pt-4">
           <Link
             to="/adjustments"
             className="flex items-center justify-between rounded-[22px] bg-primary-foreground/5 px-5 py-4 ring-1 ring-primary-foreground/15 transition-colors active:bg-primary-foreground/10"
