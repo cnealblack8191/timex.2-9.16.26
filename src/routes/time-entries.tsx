@@ -192,6 +192,7 @@ function TimeEntriesPage() {
                   <th className="px-3 py-2.5 font-semibold">In</th>
                   <th className="px-3 py-2.5 font-semibold">Out</th>
                   <th className="px-3 py-2.5 text-right font-semibold">Hrs</th>
+                  <th className="px-3 py-2.5 font-semibold">Photos</th>
                   <th className="px-3 py-2.5" />
                 </tr>
               </thead>
@@ -227,6 +228,30 @@ function TimeEntriesPage() {
                       <td className="px-3 py-3 text-right font-mono font-semibold">
                         {entryHours(entry).toFixed(2)}
                       </td>
+                      <td className="whitespace-nowrap px-3 py-3">
+                        {entry.clock_in_photo || entry.clock_out_photo ? (
+                          <span className="flex gap-2">
+                            {entry.clock_in_photo && (
+                              <button
+                                onClick={() => showPhoto(entry.id, "in")}
+                                className="text-[12px] font-semibold text-steel underline decoration-dotted"
+                              >
+                                In
+                              </button>
+                            )}
+                            {entry.clock_out_photo && (
+                              <button
+                                onClick={() => showPhoto(entry.id, "out")}
+                                className="text-[12px] font-semibold text-steel underline decoration-dotted"
+                              >
+                                Out
+                              </button>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-[12px] text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="px-3 py-3 text-right">
                         <button
                           onClick={() => startEdit(entry)}
@@ -240,7 +265,7 @@ function TimeEntriesPage() {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-10 text-center text-[13px] text-muted-foreground">
+                    <td colSpan={8} className="px-4 py-10 text-center text-[13px] text-muted-foreground">
                       No time entries for this selection.
                     </td>
                   </tr>
