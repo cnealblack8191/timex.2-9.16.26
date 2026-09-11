@@ -105,7 +105,30 @@ Punches land directly in the shared database, so the office dashboard updates
 in real time (Realtime is on for `time_entries` and `employees`) with no extra
 work from the mobile app.
 
-## Web kiosk
+## Web kiosk — required emergency backup
 
-`/kiosk` stays available and fully functional online and offline — useful for
-tablets, testing, and as a fallback while the native screen is built.
+`/kiosk` stays available and fully functional online and offline. It is not
+only a development convenience: **ECI requires a working browser kiosk as the
+emergency backup** for the native screen.
+
+Hand-off requirements:
+
+- Keep the web kiosk deployed and reachable at all times at
+  `https://timex-eci.lovable.app/kiosk` (preview: the `-dev` host). Do not
+  remove or gate it behind the native app.
+- Foremen should have the URL saved/bookmarked (add-to-home-screen works) so
+  crews can punch from any phone, tablet, or laptop if the native app fails,
+  will not update, loses its device key, or is pulled from the store.
+- The web kiosk writes to the same database with the same duplicate-proof
+  `client_punch_id`, so punches made in the backup and in the native app can
+  never double-count each other.
+- It queues punches locally when there is no signal and sends them on
+  reconnect, exactly like the native queue.
+- The supervisor Adjustments screen is reachable from the backup kiosk with the
+  same code, so a foreman can correct a bad punch without the office.
+- The layout is responsive and works in both portrait and landscape.
+- Include the backup URL and a one-line "what to do if the app is down" note in
+  the native app's help/support screen.
+- Verify the backup path as part of every release test: open the URL on a
+  device with the native app uninstalled, punch in, punch out, confirm the
+  entries appear on the office dashboard.
