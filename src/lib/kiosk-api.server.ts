@@ -160,7 +160,6 @@ export async function applyKioskPunch(punch: PunchBody) {
     message: open ? "Switched jobs — clocked in" : "Clocked in",
   };
 }
-}
 
 /** Checks the supervisor adjustment code. */
 export async function verifyPin(pin: string) {
