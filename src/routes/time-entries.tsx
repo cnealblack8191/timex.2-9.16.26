@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getPunchPhotoUrl,
+  purgeOldPunchPhotos,
+  PHOTO_RETENTION_DAYS,
+} from "@/lib/punch-photos.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import {
@@ -46,6 +51,25 @@ function TimeEntriesPage() {
   const [editing, setEditing] = useState<TimeEntry | null>(null);
   const [draft, setDraft] = useState({ clock_in: "", clock_out: "", job_id: "", notes: "" });
   const [saving, setSaving] = useState(false);
+  const [photo, setPhoto] = useState<{ url: string; label: string } | null>(null);
+  const [photoLoading, setPhotoLoading] = useState(false);
+
+  // photos older than the retention window are cleared out in the background
+  useEffect(() => {
+    void purgeOldPunchPhotos().catch(() => {});
+  }, []);
+
+  async function showPhoto(entryId: string, kind: "in" | "out") {
+    setPhotoLoading(true);
+    try {
+      const { url } = await getPunchPhotoUrl({ data: { entry_id: entryId, kind } });
+      if (url) setPhoto({ url, label: kind === "in" ? "Clock in photo" : "Clock out photo" });
+    } catch {
+      // nothing to show
+    } finally {
+      setPhotoLoading(false);
+    }
+  }
 
   const anchorDate = useMemo(() => parseDateKey(anchor), [anchor]);
 
