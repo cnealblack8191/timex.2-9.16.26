@@ -132,7 +132,9 @@ export type Database = {
         Row: {
           client_punch_id: string | null
           clock_in: string | null
+          clock_in_photo: string | null
           clock_out: string | null
+          clock_out_photo: string | null
           created_at: string
           edited: boolean
           employee_id: string
@@ -148,7 +150,9 @@ export type Database = {
         Insert: {
           client_punch_id?: string | null
           clock_in?: string | null
+          clock_in_photo?: string | null
           clock_out?: string | null
+          clock_out_photo?: string | null
           created_at?: string
           edited?: boolean
           employee_id: string
@@ -164,7 +168,9 @@ export type Database = {
         Update: {
           client_punch_id?: string | null
           clock_in?: string | null
+          clock_in_photo?: string | null
           clock_out?: string | null
+          clock_out_photo?: string | null
           created_at?: string
           edited?: boolean
           employee_id?: string
