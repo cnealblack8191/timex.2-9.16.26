@@ -12,7 +12,7 @@ type PunchBody = {
   job_overridden?: boolean;
   source?: string;
   /** Optional compressed JPEG, base64 or data URL. */
-  photo?: string;
+  photo?: string | undefined;
 };
 
 function dateKey(iso: string) {
@@ -40,7 +40,7 @@ async function storePhoto(entryId: string, kind: "in" | "out", photo: string) {
   if (error) return;
   await db
     .from("time_entries")
-    .update({ [kind === "in" ? "clock_in_photo" : "clock_out_photo"]: path })
+    .update(kind === "in" ? { clock_in_photo: path } : { clock_out_photo: path })
     .eq("id", entryId);
 }
 

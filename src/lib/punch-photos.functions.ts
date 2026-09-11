@@ -43,10 +43,9 @@ export const savePunchPhoto = createServerFn({ method: "POST" })
       });
     if (uploadError) throw uploadError;
 
-    const column = data.kind === "in" ? "clock_in_photo" : "clock_out_photo";
     const { error: updateError } = await supabaseAdmin
       .from("time_entries")
-      .update({ [column]: path })
+      .update(data.kind === "in" ? { clock_in_photo: path } : { clock_out_photo: path })
       .eq("id", entry.id);
     if (updateError) throw updateError;
 
