@@ -4,6 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEmployees, useJobs, useOpenEntries } from "@/hooks/use-timekeeping";
 import { applyPunch, fullName, jobLabel, type Employee, type Job } from "@/lib/timekeeping";
 import { enqueue, flushQueue, getQueue } from "@/lib/offline-queue";
+import { capturePunchPhoto } from "@/lib/capture-photo";
+import { savePunchPhoto } from "@/lib/punch-photos.functions";
 import eciLogo from "@/assets/eci-logo.png.asset.json";
 import { Lock } from "lucide-react";
 
@@ -111,10 +113,19 @@ function Kiosk() {
       job_overridden: jobId !== employee.assigned_job_id,
       client_punch_id: punchId,
     };
+    // A photo is a bonus, never a blocker: if the camera is off, the punch still goes through.
+    const photo = await capturePunchPhoto();
     const stamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     try {
       if (!navigator.onLine) throw new Error("offline");
       const message = await applyPunch(payload);
+      if (photo) {
+        try {
+          await savePunchPhoto({ data: { client_punch_id: punchId, kind: action, data_url: photo } });
+        } catch {
+          // photo upload failures are ignored on purpose
+        }
+      }
       setResult({
         ok: true,
         message,
@@ -130,6 +141,7 @@ function Kiosk() {
           queued_id: punchId,
           employee_name: fullName(employee),
           job_label: jobLabel(selectedJob),
+          photo,
         });
         setResult({
           ok: true,

@@ -11,6 +11,8 @@ const punchSchema = z.object({
   at: z.string().datetime({ offset: true }),
   job_overridden: z.boolean().optional(),
   source: z.string().max(32).optional(),
+  /** Optional compressed JPEG (base64 or data URL), max ~1MB encoded. */
+  photo: z.string().max(1_400_000).optional(),
 });
 
 const bodySchema = z.object({ punches: z.array(punchSchema).min(1).max(200) });
