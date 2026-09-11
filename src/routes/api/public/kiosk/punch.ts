@@ -45,6 +45,7 @@ export const Route = createFileRoute("/api/public/kiosk/punch")({
                 source: punch.source ?? "mobile",
               }),
             );
+
           } catch {
             // retryable: the device keeps this punch queued and sends it again
             results.push({

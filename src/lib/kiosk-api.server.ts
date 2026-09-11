@@ -124,6 +124,7 @@ export async function applyKioskPunch(punch: PunchBody) {
       .update({ clock_out: punch.at, client_punch_id: punch.punch_id })
       .eq("id", open.id);
     if (error) throw error;
+    if (punch.photo) await storePhoto(open.id, "out", punch.photo);
     return { punch_id: punch.punch_id, ok: true, duplicate: false, message: "Clocked out" };
   }
 
@@ -135,17 +136,22 @@ export async function applyKioskPunch(punch: PunchBody) {
     if (error) throw error;
   }
 
-  const { error } = await db.from("time_entries").insert({
-    employee_id: punch.employee_id,
-    job_id: punch.job_id,
-    work_date: dateKey(punch.at),
-    clock_in: punch.at,
-    entry_type: "work",
-    job_overridden: punch.job_overridden ?? false,
-    client_punch_id: punch.punch_id,
-    source: punch.source ?? "mobile",
-  });
+  const { data: inserted, error } = await db
+    .from("time_entries")
+    .insert({
+      employee_id: punch.employee_id,
+      job_id: punch.job_id,
+      work_date: dateKey(punch.at),
+      clock_in: punch.at,
+      entry_type: "work",
+      job_overridden: punch.job_overridden ?? false,
+      client_punch_id: punch.punch_id,
+      source: punch.source ?? "mobile",
+    })
+    .select("id")
+    .single();
   if (error) throw error;
+  if (punch.photo && inserted) await storePhoto(inserted.id, "in", punch.photo);
 
   return {
     punch_id: punch.punch_id,
@@ -153,6 +159,7 @@ export async function applyKioskPunch(punch: PunchBody) {
     duplicate: false,
     message: open ? "Switched jobs — clocked in" : "Clocked in",
   };
+}
 }
 
 /** Checks the supervisor adjustment code. */
