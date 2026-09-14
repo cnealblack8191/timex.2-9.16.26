@@ -382,6 +382,7 @@ function DivisionsSection() {
   const [editing, setEditing] = useState<Partial<Division> | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const editorRef = useScrollToEditor(Boolean(editing));
 
   async function save() {
     if (!editing?.name || !editing?.code) return;
