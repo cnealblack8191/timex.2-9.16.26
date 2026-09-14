@@ -207,6 +207,13 @@ function TimeEntriesPage() {
                 </option>
               ))}
             </select>
+            <input
+              type="text"
+              value={employeeSearch}
+              onChange={(e) => setEmployeeSearch(e.target.value)}
+              placeholder="Search employee name…"
+              className={selectClass}
+            />
           </div>
 
           <div className="max-h-[640px] overflow-auto">
