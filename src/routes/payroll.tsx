@@ -85,8 +85,13 @@ function PayrollPage() {
         return { emp, perDay, workTotal, total, ptoHours, vacationHours };
       })
       .filter((r) => r.total > 0)
-      .sort((a, b) => b.total - a.total);
-  }, [employees, entries, days]);
+      .sort((a, b) => {
+        const divA = divisionById.get(a.emp.division_id ?? "")?.name ?? "";
+        const divB = divisionById.get(b.emp.division_id ?? "")?.name ?? "";
+        if (divA !== divB) return divA.localeCompare(divB);
+        return fullName(a.emp).localeCompare(fullName(b.emp));
+      });
+  }, [employees, entries, days, divisionById]);
 
   const grand = rows.reduce((sum, r) => sum + r.total, 0);
   const otPeople = rows.filter((r) => r.workTotal > OVERTIME_THRESHOLD);
