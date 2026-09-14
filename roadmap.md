@@ -8,7 +8,7 @@
 - [x] Live updates in the management portal
 - [x] Operations dashboard: who's clocked in, recent time, bulk assign
 - [x] Time entries: filter by day/week/employee/job/division, edit & delete
-- [x] Assignments: individual and bulk by division
+- [x] Assignments: individual and bulk by division (now under Admin → Bulk Assign)
 - [x] PTO & vacation pay for one or many employees
 - [x] Weekly hours review with 40-hour overtime flags
 - [x] Payroll CSV and PDF downloads
