@@ -246,6 +246,7 @@ function JobsSection() {
   const [editing, setEditing] = useState<Partial<Job> | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const editorRef = useScrollToEditor(Boolean(editing));
 
   async function save() {
     if (!editing?.number || !editing?.name) return;
