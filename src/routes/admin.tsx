@@ -189,106 +189,146 @@ function EmployeesSection() {
               </tr>
             </thead>
             <tbody>
-              {filteredEmployees.map((e) => (
-                <tr key={e.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
-                  <td className="px-4 py-2.5 font-semibold">{fullName(e)}</td>
-                  <td className="px-3 py-2.5 text-steel">{divisionById.get(e.division_id ?? "")?.name ?? "—"}</td>
-                  <td className="px-3 py-2.5 text-steel">{jobLabel(jobs.find((j) => j.id === e.assigned_job_id))}</td>
-                  <td className="px-3 py-2.5 text-steel">{e.active ? "Active" : "Inactive"}</td>
-                  <td className="px-3 py-2.5 text-right">
-                    <button
-                      onClick={() => setEditing(e)}
-                      className="rounded-md bg-card/80 px-2.5 py-1 text-[12px] font-medium text-steel ring-1 ring-ink/5 hover:bg-card"
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {editing && !editing.id && (
+                <EmployeeEditRow
+                  editing={editing}
+                  setEditing={setEditing}
+                  divisions={divisions}
+                  jobs={jobs}
+                  saving={saving}
+                  onSave={save}
+                />
+              )}
+              {filteredEmployees.map((e) =>
+                editing?.id === e.id ? (
+                  <EmployeeEditRow
+                    key={e.id}
+                    editing={editing}
+                    setEditing={setEditing}
+                    divisions={divisions}
+                    jobs={jobs}
+                    saving={saving}
+                    onSave={save}
+                  />
+                ) : (
+                  <tr key={e.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
+                    <td className="px-4 py-2.5 font-semibold">{fullName(e)}</td>
+                    <td className="px-3 py-2.5 text-steel">{divisionById.get(e.division_id ?? "")?.name ?? "—"}</td>
+                    <td className="px-3 py-2.5 text-steel">{jobLabel(jobs.find((j) => j.id === e.assigned_job_id))}</td>
+                    <td className="px-3 py-2.5 text-steel">{e.active ? "Active" : "Inactive"}</td>
+                    <td className="px-3 py-2.5 text-right">
+                      <button
+                        onClick={() => setEditing(e)}
+                        className="rounded-md bg-card/80 px-2.5 py-1 text-[12px] font-medium text-steel ring-1 ring-ink/5 hover:bg-card"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ),
+              )}
             </tbody>
           </table>
         </div>
+        {message && <p className="border-t border-line/70 px-4 py-2 text-[12px] font-semibold text-steel">{message}</p>}
       </Panel>
+  );
+}
 
-      {editing && (
-        <Panel className="col-span-12 self-start xl:col-span-4">
-          <div ref={editorRef} className="scroll-mt-24" />
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[13px] font-bold">{editing.id ? "Edit employee" : "Add employee"}</span>
-            <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
-              Cancel
-            </button>
-          </div>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-steel">First name</span>
-                <input
-                  value={editing.first_name}
-                  onChange={(e) => setEditing({ ...editing, first_name: e.target.value })}
-                  className="mt-1 w-full rounded-lg bg-card/80 px-3 py-2 text-[13px] ring-1 ring-ink/5"
-                />
-              </label>
-              <label className="block">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-steel">Last name</span>
-                <input
-                  value={editing.last_name}
-                  onChange={(e) => setEditing({ ...editing, last_name: e.target.value })}
-                  className="mt-1 w-full rounded-lg bg-card/80 px-3 py-2 text-[13px] ring-1 ring-ink/5"
-                />
-              </label>
-            </div>
-            <label className="block">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-steel">Division</span>
-              <select
-                value={editing.division_id ?? ""}
-                onChange={(e) => setEditing({ ...editing, division_id: e.target.value || null })}
-                className="mt-1 w-full rounded-lg bg-card/80 px-3 py-2 text-[13px] ring-1 ring-ink/5"
-              >
-                <option value="">— None —</option>
-                {divisions.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-steel">Assigned job</span>
-              <select
-                value={editing.assigned_job_id ?? ""}
-                onChange={(e) => setEditing({ ...editing, assigned_job_id: e.target.value || null })}
-                className="mt-1 w-full rounded-lg bg-card/80 px-3 py-2 text-[13px] ring-1 ring-ink/5"
-              >
-                <option value="">— None —</option>
-                {jobs.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {jobLabel(j)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex items-center gap-2 text-[13px]">
-              <input
-                type="checkbox"
-                checked={editing.active ?? true}
-                onChange={(e) => setEditing({ ...editing, active: e.target.checked })}
-                className="h-4 w-4 rounded border-ink/20"
-              />
-              Active employee
-            </label>
-            <button
-              onClick={save}
-              disabled={saving || !editing.first_name || !editing.last_name}
-              className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
-            >
-              <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add employee"}</span>
-            </button>
-            {message && <p className="text-[12px] font-semibold text-steel">{message}</p>}
-          </div>
-        </Panel>
-      )}
-    </div>
+function EmployeeEditRow({
+  editing,
+  setEditing,
+  divisions,
+  jobs,
+  saving,
+  onSave,
+}: {
+  editing: Partial<Employee>;
+  setEditing: (e: Partial<Employee> | null) => void;
+  divisions: Division[];
+  jobs: Job[];
+  saving: boolean;
+  onSave: () => void;
+}) {
+  return (
+    <tr className="border-b border-amber/60 bg-amber/15 ring-1 ring-inset ring-amber/50">
+      <td className="px-4 py-2">
+        <div className="flex gap-2">
+          <input
+            value={editing.first_name ?? ""}
+            onChange={(e) => setEditing({ ...editing, first_name: e.target.value })}
+            placeholder="First"
+            aria-label="First name"
+            className="w-full min-w-0 rounded-md bg-card px-2 py-1.5 text-[13px] ring-1 ring-ink/10"
+          />
+          <input
+            value={editing.last_name ?? ""}
+            onChange={(e) => setEditing({ ...editing, last_name: e.target.value })}
+            placeholder="Last"
+            aria-label="Last name"
+            className="w-full min-w-0 rounded-md bg-card px-2 py-1.5 text-[13px] ring-1 ring-ink/10"
+          />
+        </div>
+      </td>
+      <td className="px-3 py-2">
+        <select
+          value={editing.division_id ?? ""}
+          onChange={(e) => setEditing({ ...editing, division_id: e.target.value || null })}
+          aria-label="Division"
+          className="w-full rounded-md bg-card px-2 py-1.5 text-[13px] ring-1 ring-ink/10"
+        >
+          <option value="">— None —</option>
+          {divisions.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td className="px-3 py-2">
+        <select
+          value={editing.assigned_job_id ?? ""}
+          onChange={(e) => setEditing({ ...editing, assigned_job_id: e.target.value || null })}
+          aria-label="Assigned job"
+          className="w-full rounded-md bg-card px-2 py-1.5 text-[13px] ring-1 ring-ink/10"
+        >
+          <option value="">— None —</option>
+          {jobs.map((j) => (
+            <option key={j.id} value={j.id}>
+              {jobLabel(j)}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td className="px-3 py-2">
+        <label className="flex items-center gap-1.5 text-[12px] text-steel">
+          <input
+            type="checkbox"
+            checked={editing.active ?? true}
+            onChange={(e) => setEditing({ ...editing, active: e.target.checked })}
+            className="h-4 w-4 rounded border-ink/20"
+          />
+          Active
+        </label>
+      </td>
+      <td className="px-3 py-2 text-right">
+        <div className="flex justify-end gap-1.5">
+          <button
+            onClick={onSave}
+            disabled={saving || !editing.first_name || !editing.last_name}
+            className="rounded-md bg-amber px-2.5 py-1 text-[12px] font-semibold text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+          <button
+            onClick={() => setEditing(null)}
+            className="rounded-md bg-card/80 px-2.5 py-1 text-[12px] font-medium text-steel ring-1 ring-ink/5 hover:bg-card"
+          >
+            Cancel
+          </button>
+        </div>
+      </td>
+    </tr>
   );
 }
 
