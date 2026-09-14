@@ -30,7 +30,7 @@ export function PortalShell({
     <div className="page-wash min-h-screen w-full bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-line/70 bg-card/60 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 rounded-md transition-opacity hover:opacity-80">
             <img
               src={eciLogo.url}
               alt="Electrical Contractor Inc."
@@ -42,7 +42,7 @@ export function PortalShell({
                 Electrical Contractor Inc.
               </div>
             </div>
-          </div>
+          </Link>
           <nav className="flex items-center gap-1 text-[13px] font-medium text-steel">
             {NAV.map((item) => (
               <Link

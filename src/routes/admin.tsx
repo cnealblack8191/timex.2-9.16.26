@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { KioskCodeForm } from "@/components/KioskCodeForm";
@@ -22,6 +22,15 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Tab = "employees" | "jobs" | "divisions" | "kiosk";
+
+/** Brings the edit panel into view when a row is opened (it sits below the table on narrow screens). */
+function useScrollToEditor(open: boolean) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (open) ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [open]);
+  return ref;
+}
 
 function AdminPage() {
   const [tab, setTab] = useState<Tab>("employees");
@@ -72,6 +81,8 @@ function EmployeesSection() {
   const [editing, setEditing] = useState<Partial<Employee> | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+
+  const editorRef = useScrollToEditor(Boolean(editing));
 
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
 
@@ -148,6 +159,7 @@ function EmployeesSection() {
 
       {editing && (
         <Panel className="col-span-12 self-start xl:col-span-4">
+          <div ref={editorRef} className="scroll-mt-24" />
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit employee" : "Add employee"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
@@ -234,6 +246,7 @@ function JobsSection() {
   const [editing, setEditing] = useState<Partial<Job> | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const editorRef = useScrollToEditor(Boolean(editing));
 
   async function save() {
     if (!editing?.number || !editing?.name) return;
@@ -304,6 +317,7 @@ function JobsSection() {
 
       {editing && (
         <Panel className="col-span-12 self-start xl:col-span-4">
+          <div ref={editorRef} className="scroll-mt-24" />
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit job" : "Add job"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
@@ -368,6 +382,7 @@ function DivisionsSection() {
   const [editing, setEditing] = useState<Partial<Division> | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const editorRef = useScrollToEditor(Boolean(editing));
 
   async function save() {
     if (!editing?.name || !editing?.code) return;
@@ -429,6 +444,7 @@ function DivisionsSection() {
 
       {editing && (
         <Panel className="col-span-12 self-start xl:col-span-4">
+          <div ref={editorRef} className="scroll-mt-24" />
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit division" : "Add division"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
