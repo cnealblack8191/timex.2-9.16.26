@@ -23,6 +23,15 @@ export const Route = createFileRoute("/admin")({
 
 type Tab = "employees" | "jobs" | "divisions" | "kiosk";
 
+/** Brings the edit panel into view when a row is opened (it sits below the table on narrow screens). */
+function useScrollToEditor(open: boolean) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (open) ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [open]);
+  return ref;
+}
+
 function AdminPage() {
   const [tab, setTab] = useState<Tab>("employees");
 
