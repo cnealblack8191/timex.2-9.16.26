@@ -123,13 +123,12 @@ function EmployeesSection() {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-5">
-      <Panel className="col-span-12 flex flex-col overflow-hidden xl:col-span-8">
+    <Panel className="flex flex-col overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/70 px-4 py-3">
           <span className="text-[13px] font-bold">Employees</span>
           <button
             onClick={() =>
-              setEditing({ id: "", first_name: "", last_name: "", division_id: null, assigned_job_id: null, active: true })
+              setEditing({ id: "__new__", first_name: "", last_name: "", division_id: null, assigned_job_id: null, active: true })
             }
             className="rounded-md bg-ink px-3 py-1.5 text-[12px] font-semibold text-primary-foreground"
           >
