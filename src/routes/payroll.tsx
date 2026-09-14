@@ -84,8 +84,10 @@ function PayrollPage() {
         const total = workTotal + ptoHours + vacationHours;
         return { emp, perDay, workTotal, total, ptoHours, vacationHours };
       })
-      .filter((r) => r.total > 0)
       .sort((a, b) => {
+        const hasA = a.total > 0 ? 1 : 0;
+        const hasB = b.total > 0 ? 1 : 0;
+        if (hasA !== hasB) return hasB - hasA;
         const divA = divisionById.get(a.emp.division_id ?? "")?.name ?? "";
         const divB = divisionById.get(b.emp.division_id ?? "")?.name ?? "";
         if (divA !== divB) return divA.localeCompare(divB);
