@@ -82,6 +82,8 @@ function EmployeesSection() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
+  const editorRef = useScrollToEditor(Boolean(editing));
+
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
 
   async function save() {
