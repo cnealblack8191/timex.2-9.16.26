@@ -128,7 +128,7 @@ function EmployeesSection() {
           <span className="text-[13px] font-bold">Employees</span>
           <button
             onClick={() =>
-              setEditing({ id: "__new__", first_name: "", last_name: "", division_id: null, assigned_job_id: null, active: true })
+              setEditing({ id: "", first_name: "", last_name: "", division_id: null, assigned_job_id: null, active: true })
             }
             className="rounded-md bg-ink px-3 py-1.5 text-[12px] font-semibold text-primary-foreground"
           >
