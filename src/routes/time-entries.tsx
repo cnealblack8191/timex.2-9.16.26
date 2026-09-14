@@ -48,6 +48,7 @@ function TimeEntriesPage() {
   const [employeeFilter, setEmployeeFilter] = useState("");
   const [jobFilter, setJobFilter] = useState("");
   const [divisionFilter, setDivisionFilter] = useState("");
+  const [employeeSearch, setEmployeeSearch] = useState("");
   const [editing, setEditing] = useState<TimeEntry | null>(null);
   const [draft, setDraft] = useState({ clock_in: "", clock_out: "", job_id: "", notes: "" });
   const [saving, setSaving] = useState(false);
