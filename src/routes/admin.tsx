@@ -81,10 +81,22 @@ function EmployeesSection() {
   const [editing, setEditing] = useState<Partial<Employee> | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [filterDivision, setFilterDivision] = useState("");
+  const [filterJob, setFilterJob] = useState("");
 
   const editorRef = useScrollToEditor(Boolean(editing));
 
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
+
+  const filteredEmployees = useMemo(
+    () =>
+      employees.filter(
+        (e) =>
+          (!filterDivision || e.division_id === filterDivision) &&
+          (!filterJob || e.assigned_job_id === filterJob),
+      ),
+    [employees, filterDivision, filterJob],
+  );
 
   async function save() {
     if (!editing?.first_name || !editing?.last_name) return;
