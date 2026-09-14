@@ -24,6 +24,7 @@
 - [x] Remove kiosk preview card from Operations dashboard
 - [x] Web kiosk works in portrait and landscape (device rotation)
 - [x] Developer hand-off: document the web kiosk as the emergency backup kiosk
+- [x] Time Entries: employee name search bar
 
 
 Architecture: the dashboard (/) is office-only. The field kiosk exists twice:
