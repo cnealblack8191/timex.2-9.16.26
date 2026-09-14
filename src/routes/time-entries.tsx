@@ -85,11 +85,13 @@ function TimeEntriesPage() {
   const employeeById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
   const jobById = useMemo(() => new Map(jobs.map((j) => [j.id, j])), [jobs]);
 
+  const searchLower = employeeSearch.trim().toLowerCase();
   const filtered = entries.filter((entry) => {
     const emp = employeeById.get(entry.employee_id);
     if (employeeFilter && entry.employee_id !== employeeFilter) return false;
     if (jobFilter && entry.job_id !== jobFilter) return false;
     if (divisionFilter && emp?.division_id !== divisionFilter) return false;
+    if (searchLower && !fullName(emp).toLowerCase().includes(searchLower)) return false;
     return true;
   });
 
