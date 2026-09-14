@@ -125,7 +125,7 @@ function EmployeesSection() {
   return (
     <div className="grid grid-cols-12 gap-5">
       <Panel className="col-span-12 flex flex-col overflow-hidden xl:col-span-8">
-        <div className="flex items-center justify-between border-b border-line/70 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/70 px-4 py-3">
           <span className="text-[13px] font-bold">Employees</span>
           <button
             onClick={() =>
@@ -135,6 +135,48 @@ function EmployeesSection() {
           >
             Add employee
           </button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 border-b border-line/70 bg-ink/[0.02] px-4 py-2.5">
+          <select
+            value={filterDivision}
+            onChange={(e) => setFilterDivision(e.target.value)}
+            className="rounded-md border border-line/70 bg-card px-2.5 py-1.5 text-[12px] font-medium text-ink"
+            aria-label="Filter by division"
+          >
+            <option value="">All divisions</option>
+            {divisions.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={filterJob}
+            onChange={(e) => setFilterJob(e.target.value)}
+            className="rounded-md border border-line/70 bg-card px-2.5 py-1.5 text-[12px] font-medium text-ink"
+            aria-label="Filter by job"
+          >
+            <option value="">All jobs</option>
+            {jobs.map((j) => (
+              <option key={j.id} value={j.id}>
+                {jobLabel(j)}
+              </option>
+            ))}
+          </select>
+          {(filterDivision || filterJob) && (
+            <button
+              onClick={() => {
+                setFilterDivision("");
+                setFilterJob("");
+              }}
+              className="text-[12px] font-medium text-steel hover:text-ink"
+            >
+              Clear
+            </button>
+          )}
+          <span className="ml-auto text-[11px] text-steel">
+            {filteredEmployees.length} of {employees.length}
+          </span>
         </div>
         <div className="max-h-[640px] overflow-auto">
           <table className="w-full text-[13px]">
