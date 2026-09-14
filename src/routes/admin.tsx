@@ -21,7 +21,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "employees" | "jobs" | "divisions" | "kiosk";
+type Tab = "employees" | "bulk-assign" | "jobs" | "divisions" | "kiosk";
 
 /** Brings the edit panel into view when a row is opened (it sits below the table on narrow screens). */
 function useScrollToEditor(open: boolean) {
@@ -33,16 +33,19 @@ function useScrollToEditor(open: boolean) {
 }
 
 function AdminPage() {
-  const [tab, setTab] = useState<Tab>("employees");
+  const location = useLocation();
+  const initialTab = new URLSearchParams(location.search).get("tab") as Tab | null;
+  const [tab, setTab] = useState<Tab>(initialTab ?? "employees");
 
   return (
     <PortalShell
       title="Admin"
-      subtitle="Manage divisions, jobs, employees, and the kiosk supervisor code"
+      subtitle="Manage divisions, jobs, employees, bulk assignments, and the kiosk supervisor code"
       actions={
         <div className="flex rounded-lg bg-card/70 p-1 ring-1 ring-ink/5">
           {[
             { key: "employees", label: "Employees" },
+            { key: "bulk-assign", label: "Bulk Assign" },
             { key: "jobs", label: "Jobs" },
             { key: "divisions", label: "Divisions" },
             { key: "kiosk", label: "Kiosk Code" },
@@ -61,6 +64,7 @@ function AdminPage() {
       }
     >
       {tab === "employees" && <EmployeesSection />}
+      {tab === "bulk-assign" && <BulkAssignSection />}
       {tab === "jobs" && <JobsSection />}
       {tab === "divisions" && <DivisionsSection />}
       {tab === "kiosk" && (
