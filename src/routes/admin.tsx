@@ -190,7 +190,7 @@ function EmployeesSection() {
               </tr>
             </thead>
             <tbody>
-              {employees.map((e) => (
+              {filteredEmployees.map((e) => (
                 <tr key={e.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
                   <td className="px-4 py-2.5 font-semibold">{fullName(e)}</td>
                   <td className="px-3 py-2.5 text-steel">{divisionById.get(e.division_id ?? "")?.name ?? "—"}</td>
