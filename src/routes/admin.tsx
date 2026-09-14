@@ -84,7 +84,6 @@ function EmployeesSection() {
   const [filterDivision, setFilterDivision] = useState("");
   const [filterJob, setFilterJob] = useState("");
 
-  const editorRef = useScrollToEditor(Boolean(editing));
 
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
 
