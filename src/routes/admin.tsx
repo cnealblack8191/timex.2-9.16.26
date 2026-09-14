@@ -159,6 +159,7 @@ function EmployeesSection() {
 
       {editing && (
         <Panel className="col-span-12 self-start xl:col-span-4">
+          <div ref={editorRef} className="scroll-mt-24" />
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-bold">{editing.id ? "Edit employee" : "Add employee"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
