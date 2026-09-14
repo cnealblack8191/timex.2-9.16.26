@@ -8,7 +8,7 @@
 - [x] Live updates in the management portal
 - [x] Operations dashboard: who's clocked in, recent time, bulk assign
 - [x] Time entries: filter by day/week/employee/job/division, edit & delete
-- [x] Assignments: individual and bulk by division
+- [x] Assignments: individual and bulk by division (now under Admin → Bulk Assign)
 - [x] PTO & vacation pay for one or many employees
 - [x] Weekly hours review with 40-hour overtime flags
 - [x] Payroll CSV and PDF downloads
@@ -33,5 +33,7 @@ app calls natively. Both write to the same database, so the office dashboard
 updates in real time via realtime. Device calls are authorised with the
 KIOSK_DEVICE_KEY secret in the x-kiosk-key header. API contract: docs/kiosk-api.md.
 
-Open: no manager login yet — the portal is open to anyone with the link.
-Employee data is sample data until the existing ECI system is connected.
+Open:
+- No manager login yet — the portal is open to anyone with the link.
+- Employee data is sample data until the existing ECI system is connected.
+- Punch photos currently live in Supabase storage; moving them to AWS S3 is pending your go-ahead.

@@ -36,11 +36,6 @@ const TILES = [
     description: "Review, correct, or remove any employee time entry.",
   },
   {
-    to: "/assignments",
-    label: "Assignments",
-    description: "Assign employees to jobs, one at a time or by division.",
-  },
-  {
     to: "/pto",
     label: "PTO & Vacation",
     description: "Enter paid time off or vacation pay for one or many employees.",
@@ -53,7 +48,7 @@ const TILES = [
   {
     to: "/admin",
     label: "Admin",
-    description: "Manage employees, jobs, divisions, and the kiosk code.",
+    description: "Manage employees, jobs, divisions, bulk assignments, and the kiosk code.",
   },
 ] as const;
 
