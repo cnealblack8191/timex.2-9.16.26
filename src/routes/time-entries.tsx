@@ -91,7 +91,7 @@ function TimeEntriesPage() {
     if (employeeFilter && entry.employee_id !== employeeFilter) return false;
     if (jobFilter && entry.job_id !== jobFilter) return false;
     if (divisionFilter && emp?.division_id !== divisionFilter) return false;
-    if (searchLower && !fullName(emp).toLowerCase().includes(searchLower)) return false;
+    if (searchLower && !(emp && fullName(emp).toLowerCase().includes(searchLower))) return false;
     return true;
   });
 
