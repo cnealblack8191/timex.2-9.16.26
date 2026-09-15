@@ -426,6 +426,18 @@ function TimeEntriesPage() {
         </div>
       )}
 
+      {cardEmployeeId &&
+        (() => {
+          const emp = employeeById.get(cardEmployeeId);
+          return emp ? (
+            <TimeCardPanel
+              employee={emp}
+              anchor={anchor}
+              onClose={() => setCardEmployeeId(null)}
+            />
+          ) : null;
+        })()}
+
       {photo && (
         <div
           onClick={() => setPhoto(null)}
