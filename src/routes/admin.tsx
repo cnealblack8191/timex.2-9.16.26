@@ -87,6 +87,7 @@ function EmployeesSection() {
   const [message, setMessage] = useState("");
   const [filterDivision, setFilterDivision] = useState("");
   const [filterJob, setFilterJob] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
 
 
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
@@ -99,6 +100,15 @@ function EmployeesSection() {
           (!filterJob || e.assigned_job_id === filterJob),
       ),
     [employees, filterDivision, filterJob],
+  );
+
+  const activeEmployees = useMemo(
+    () => filteredEmployees.filter((e) => e.active),
+    [filteredEmployees],
+  );
+  const inactiveEmployees = useMemo(
+    () => filteredEmployees.filter((e) => !e.active),
+    [filteredEmployees],
   );
 
   async function save() {
