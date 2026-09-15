@@ -10,9 +10,9 @@ export const Route = createFileRoute("/pto")({
   head: () => ({
     meta: [
       { title: "TimeX" },
-      { name: "description", content: "Enter PTO and vacation pay for one employee or a whole crew." },
-      { property: "og:title", content: "PTO & Vacation — TimeX" },
-      { property: "og:description", content: "Enter PTO and vacation pay for one employee or a whole crew." },
+      { name: "description", content: "Enter PTO and holiday pay for one employee or a whole crew." },
+      { property: "og:title", content: "PTO & Holiday — TimeX" },
+      { property: "og:description", content: "Enter PTO and holiday pay for one employee or a whole crew." },
     ],
   }),
   component: PtoPage,
@@ -24,7 +24,7 @@ function PtoPage() {
   const { data: divisions = [] } = useDivisions();
   const { data: weekEntries = [] } = useWeekEntries(new Date());
 
-  const [type, setType] = useState<"pto" | "vacation">("pto");
+  const [type, setType] = useState<"pto" | "holiday">("pto");
   const [date, setDate] = useState(toDateKey(new Date()));
   const [hours, setHours] = useState("8");
   const [notes, setNotes] = useState("");
@@ -43,7 +43,9 @@ function PtoPage() {
     return true;
   });
 
-  const recent = weekEntries.filter((e) => e.entry_type !== "work");
+  const recent = weekEntries.filter(
+    (e) => e.entry_type === "pto" || e.entry_type === "holiday",
+  );
 
   async function submit() {
     if (selected.length === 0 || !date) return;
@@ -60,7 +62,7 @@ function PtoPage() {
     setSaving(false);
     if (error) return setNote(error.message);
     setNote(
-      `${type === "pto" ? "PTO" : "Vacation pay"} added for ${selected.length} employee${
+      `${type === "pto" ? "PTO" : "Holiday pay"} added for ${selected.length} employee${
         selected.length === 1 ? "" : "s"
       }`,
     );
@@ -73,8 +75,8 @@ function PtoPage() {
 
   return (
     <PortalShell
-      title="PTO & Vacation"
-      subtitle="Add paid time off or vacation pay for one employee or a whole division"
+      title="PTO & Holiday"
+      subtitle="Add paid time off or holiday pay for one employee or a whole division"
     >
       <div className="grid grid-cols-12 gap-5">
         <Panel className="col-span-12 flex flex-col overflow-hidden xl:col-span-7">
@@ -142,7 +144,7 @@ function PtoPage() {
               New Entry
             </span>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              {(["pto", "vacation"] as const).map((t) => (
+              {(["pto", "holiday"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setType(t)}
@@ -150,7 +152,7 @@ function PtoPage() {
                     type === t ? "bg-ink text-primary-foreground" : "bg-card/80 text-steel ring-1 ring-ink/5"
                   }`}
                 >
-                  {t === "pto" ? "PTO" : "Vacation pay"}
+                  {t === "pto" ? "PTO" : "Holiday pay"}
                 </button>
               ))}
             </div>
@@ -204,7 +206,7 @@ function PtoPage() {
 
           <Panel className="p-4">
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-steel">
-              This Week's PTO & Vacation
+              This Week's PTO & Holiday
             </span>
             <ul className="mt-3 space-y-1.5">
               {recent.map((entry) => (
