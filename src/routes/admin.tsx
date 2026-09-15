@@ -1,4 +1,5 @@
 import { createFileRoute, useLocation } from "@tanstack/react-router";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
@@ -87,6 +88,7 @@ function EmployeesSection() {
   const [message, setMessage] = useState("");
   const [filterDivision, setFilterDivision] = useState("");
   const [filterJob, setFilterJob] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
 
 
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
@@ -99,6 +101,15 @@ function EmployeesSection() {
           (!filterJob || e.assigned_job_id === filterJob),
       ),
     [employees, filterDivision, filterJob],
+  );
+
+  const activeEmployees = useMemo(
+    () => filteredEmployees.filter((e) => e.active),
+    [filteredEmployees],
+  );
+  const inactiveEmployees = useMemo(
+    () => filteredEmployees.filter((e) => !e.active),
+    [filteredEmployees],
   );
 
   async function save() {
@@ -123,6 +134,35 @@ function EmployeesSection() {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       queryClient.invalidateQueries({ queryKey: ["all-employees"] });
     }
+  }
+
+  function renderRow(e: Employee) {
+    return editing?.id === e.id ? (
+      <EmployeeEditRow
+        key={e.id}
+        editing={editing}
+        setEditing={setEditing}
+        divisions={divisions}
+        jobs={jobs}
+        saving={saving}
+        onSave={save}
+      />
+    ) : (
+      <tr key={e.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
+        <td className="px-4 py-2.5 font-semibold">{fullName(e)}</td>
+        <td className="px-3 py-2.5 text-steel">{divisionById.get(e.division_id ?? "")?.name ?? "—"}</td>
+        <td className="px-3 py-2.5 text-steel">{jobLabel(jobs.find((j) => j.id === e.assigned_job_id))}</td>
+        <td className="px-3 py-2.5 text-steel">{e.active ? "Active" : "Inactive"}</td>
+        <td className="px-3 py-2.5 text-right">
+          <button
+            onClick={() => setEditing(e)}
+            className="rounded-md bg-card/80 px-2.5 py-1 text-[12px] font-medium text-steel ring-1 ring-ink/5 hover:bg-card"
+          >
+            Edit
+          </button>
+        </td>
+      </tr>
+    );
   }
 
   return (
@@ -177,7 +217,7 @@ function EmployeesSection() {
             </button>
           )}
           <span className="ml-auto text-[11px] text-steel">
-            {filteredEmployees.length} of {employees.length}
+            {activeEmployees.length} active · {inactiveEmployees.length} inactive
           </span>
         </div>
         <div className="max-h-[640px] overflow-auto">
@@ -202,33 +242,26 @@ function EmployeesSection() {
                   onSave={save}
                 />
               )}
-              {filteredEmployees.map((e) =>
-                editing?.id === e.id ? (
-                  <EmployeeEditRow
-                    key={e.id}
-                    editing={editing}
-                    setEditing={setEditing}
-                    divisions={divisions}
-                    jobs={jobs}
-                    saving={saving}
-                    onSave={save}
-                  />
-                ) : (
-                  <tr key={e.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
-                    <td className="px-4 py-2.5 font-semibold">{fullName(e)}</td>
-                    <td className="px-3 py-2.5 text-steel">{divisionById.get(e.division_id ?? "")?.name ?? "—"}</td>
-                    <td className="px-3 py-2.5 text-steel">{jobLabel(jobs.find((j) => j.id === e.assigned_job_id))}</td>
-                    <td className="px-3 py-2.5 text-steel">{e.active ? "Active" : "Inactive"}</td>
-                    <td className="px-3 py-2.5 text-right">
+              {activeEmployees.map(renderRow)}
+              {inactiveEmployees.length > 0 && (
+                <>
+                  <tr className="border-b border-line/70 bg-ink/[0.03]">
+                    <td colSpan={5} className="px-4 py-2">
                       <button
-                        onClick={() => setEditing(e)}
-                        className="rounded-md bg-card/80 px-2.5 py-1 text-[12px] font-medium text-steel ring-1 ring-ink/5 hover:bg-card"
+                        onClick={() => setShowInactive((v) => !v)}
+                        className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-steel hover:text-ink"
+                        aria-expanded={showInactive}
                       >
-                        Edit
+                        <ChevronDown
+                          aria-hidden="true"
+                          className={`size-4 transition-transform ${showInactive ? "rotate-180" : ""}`}
+                        />
+                        Inactive employees ({inactiveEmployees.length})
                       </button>
                     </td>
                   </tr>
-                ),
+                  {showInactive && inactiveEmployees.map(renderRow)}
+                </>
               )}
             </tbody>
           </table>
