@@ -322,7 +322,11 @@ function TimeEntriesPage() {
                     Edit Entry
                   </div>
                   <div className="mt-0.5 text-[15px] font-bold">
-                    {fullName(employeeById.get(editing.employee_id)!)} ·{" "}
+                    {(() => {
+                      const emp = employeeById.get(editing.employee_id);
+                      return emp ? fullName(emp) : "Unknown";
+                    })()}{" "}
+                    ·{" "}
                     {formatDay(editing.work_date)}
                   </div>
                 </div>

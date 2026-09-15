@@ -213,7 +213,10 @@ function PtoPage() {
                   className="flex items-center gap-2 rounded-lg bg-card/80 px-3 py-2 text-[13px]"
                 >
                   <span className="font-semibold">
-                    {fullName(employeeById.get(entry.employee_id)!) ?? "Unknown"}
+                    {(() => {
+                      const emp = employeeById.get(entry.employee_id);
+                      return emp ? fullName(emp) : "Unknown";
+                    })()}
                   </span>
                   <span className="rounded bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold uppercase text-steel">
                     {entry.entry_type}
