@@ -207,3 +207,20 @@
   }
 }
 
+
+@media print {
+  .print-hide,
+  header,
+  nav {
+    display: none !important;
+  }
+
+  .page-wash {
+    background: #fff !important;
+  }
+
+  .panel {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+}
