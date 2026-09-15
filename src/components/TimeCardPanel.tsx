@@ -193,7 +193,9 @@ export function TimeCardPanel({
 
           if (matches.length > 0) {
             // put the full day total on the first entry, zero the rest
-            const [first, ...rest] = matches;
+            const first = matches[0];
+            if (!first) continue;
+            const rest = matches.slice(1);
             if (hours != null) {
               const { error: err } = await supabase
                 .from("time_entries")
