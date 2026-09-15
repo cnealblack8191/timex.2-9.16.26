@@ -31,6 +31,7 @@ import {
   useJobs,
   useOpenEntries,
   useRangeEntries,
+  useWeekEntries,
 } from "@/hooks/use-timekeeping";
 import {
   buildRows,
@@ -265,17 +266,16 @@ function ReportsPage() {
     [open, allowedEmployeeIds],
   );
 
+  // Always the live payroll week, independent of the selected report range.
+  const { data: currentWeekEntries = [] } = useWeekEntries(today);
   const workedThisWeek = useMemo(() => {
-    const weekFrom = toDateKey(weekStart(today));
-    const weekTo = toDateKey(weekEnd(today));
     const ids = new Set(
-      filteredEntries
-        .filter((e) => e.work_date >= weekFrom && e.work_date <= weekTo && e.entry_type === "work")
+      currentWeekEntries
+        .filter((e) => e.entry_type === "work" && allowedEmployeeIds.has(e.employee_id))
         .map((e) => e.employee_id),
     );
     return ids.size;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredEntries]);
+  }, [currentWeekEntries, allowedEmployeeIds]);
 
   const activeColumns = COLUMN_KEYS.filter((key) => columns[key]);
   const dayKeys = dayKeysBetween(from, to);
