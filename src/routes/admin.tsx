@@ -187,7 +187,7 @@ function EmployeesSection() {
             </button>
           )}
           <span className="ml-auto text-[11px] text-steel">
-            {filteredEmployees.length} of {employees.length}
+            {activeEmployees.length} active · {inactiveEmployees.length} inactive
           </span>
         </div>
         <div className="max-h-[640px] overflow-auto">
