@@ -84,7 +84,7 @@ function addTo(bucket: HoursBucket, entry: TimeEntry) {
   else if (entry.entry_type === "work") bucket.worked += hours;
 }
 
-function finalize(bucket: HoursBucket, overtime: number) {
+function finalize<T extends HoursBucket>(bucket: T, overtime: number) {
   bucket.overtime = overtime;
   bucket.regular = Math.max(0, bucket.worked - overtime);
   bucket.total = bucket.worked + bucket.pto + bucket.holiday;
