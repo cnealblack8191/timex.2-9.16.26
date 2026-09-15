@@ -19,7 +19,7 @@ export type Employee = {
   active: boolean;
 };
 
-export type EntryType = "work" | "pto" | "vacation";
+export type EntryType = "work" | "pto" | "holiday";
 
 export type TimeEntry = {
   id: string;
