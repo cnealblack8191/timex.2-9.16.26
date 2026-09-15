@@ -159,7 +159,7 @@ function PayrollPage() {
     doc.text("TimeX Payroll Breakdown", 36, 118);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Payroll week: ${from} through ${to} (Monday-Saturday)`, 36, 135);
+    doc.text(`Payroll week: ${from} through ${to} (Sunday-Saturday)`, 36, 135);
     doc.text(
       `Employees: ${rows.length}    Total hours: ${grand.toFixed(2)}    Overtime hours: ${overtimeHours.toFixed(2)}`,
       36,
@@ -230,7 +230,7 @@ function PayrollPage() {
   return (
     <PortalShell
       title="Payroll"
-      subtitle={`Week of ${from} through ${to} · Monday–Saturday`}
+      subtitle={`Week of ${from} through ${to} · Sunday–Saturday`}
       actions={
         <>
           <input
