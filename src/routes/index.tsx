@@ -41,6 +41,11 @@ const TILES = [
     description: "Enter paid time off or holiday pay for one or many employees.",
   },
   {
+    to: "/reports",
+    label: "Reports",
+    description: "Charts and custom reports by employee, division, job, or company.",
+  },
+  {
     to: "/payroll",
     label: "Payroll",
     description: "Weekly hours by employee, overtime flags, and CSV or PDF export.",
