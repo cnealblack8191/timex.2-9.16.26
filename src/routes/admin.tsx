@@ -136,6 +136,35 @@ function EmployeesSection() {
     }
   }
 
+  function renderRow(e: Employee) {
+    return editing?.id === e.id ? (
+      <EmployeeEditRow
+        key={e.id}
+        editing={editing}
+        setEditing={setEditing}
+        divisions={divisions}
+        jobs={jobs}
+        saving={saving}
+        onSave={save}
+      />
+    ) : (
+      <tr key={e.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
+        <td className="px-4 py-2.5 font-semibold">{fullName(e)}</td>
+        <td className="px-3 py-2.5 text-steel">{divisionById.get(e.division_id ?? "")?.name ?? "—"}</td>
+        <td className="px-3 py-2.5 text-steel">{jobLabel(jobs.find((j) => j.id === e.assigned_job_id))}</td>
+        <td className="px-3 py-2.5 text-steel">{e.active ? "Active" : "Inactive"}</td>
+        <td className="px-3 py-2.5 text-right">
+          <button
+            onClick={() => setEditing(e)}
+            className="rounded-md bg-card/80 px-2.5 py-1 text-[12px] font-medium text-steel ring-1 ring-ink/5 hover:bg-card"
+          >
+            Edit
+          </button>
+        </td>
+      </tr>
+    );
+  }
+
   return (
     <Panel className="flex flex-col overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/70 px-4 py-3">
