@@ -43,7 +43,7 @@ export const fullName = (e: Employee) => `${e.first_name} ${e.last_name}`;
 export const jobLabel = (j?: Job | null) =>
   j ? `#${j.number} · ${j.name}` : "Unassigned";
 
-/* ---------- week math: payroll week runs Monday through Saturday ---------- */
+/* ---------- week math: payroll week runs Sunday through Saturday ---------- */
 
 export function toDateKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
@@ -55,21 +55,20 @@ export function weekStart(date: Date = new Date()) {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
   const day = d.getDay(); // 0 Sun .. 6 Sat
-  const diff = day === 0 ? -6 : 1 - day; // back to Monday
-  d.setDate(d.getDate() + diff);
+  d.setDate(d.getDate() - day); // back to Sunday
   return d;
 }
 
 export function weekEnd(date: Date = new Date()) {
   const start = weekStart(date);
   const end = new Date(start);
-  end.setDate(start.getDate() + 5); // Saturday
+  end.setDate(start.getDate() + 6); // Saturday
   return end;
 }
 
 export function weekDays(date: Date = new Date()) {
   const start = weekStart(date);
-  return Array.from({ length: 6 }, (_, i) => {
+  return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(start);
     d.setDate(start.getDate() + i);
     return d;

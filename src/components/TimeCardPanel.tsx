@@ -82,7 +82,7 @@ export function TimeCardPanel({
   const to = toDateKey(end);
   const days = useMemo(
     () =>
-      Array.from({ length: 6 }, (_, i) => {
+      Array.from({ length: 7 }, (_, i) => {
         const d = new Date(start);
         d.setDate(start.getDate() + i);
         return toDateKey(d);
