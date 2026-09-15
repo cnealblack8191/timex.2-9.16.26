@@ -161,7 +161,7 @@ function Operations() {
             </div>
             <div className="mt-2 font-mono text-3xl">{totalHours.toFixed(1)}</div>
             <div className="mt-1 text-[12px] text-primary-foreground/60">
-              hours logged Monday–Saturday
+              hours logged Sunday–Saturday
             </div>
           </div>
         </div>
