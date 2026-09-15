@@ -354,7 +354,10 @@ function ReportsPage() {
     let cursorY = filtersSummary ? 176 : 162;
 
     if (showCharts && chartsRef.current) {
-      const svgs = [...chartsRef.current.querySelectorAll("svg")] as SVGSVGElement[];
+      // One chart per panel — skip the small legend swatch SVGs.
+      const svgs = [...chartsRef.current.querySelectorAll("section")]
+        .map((section) => section.querySelector<SVGSVGElement>("svg.recharts-surface"))
+        .filter((svg): svg is SVGSVGElement => Boolean(svg));
       const images = (await Promise.all(svgs.slice(0, 3).map((svg) => svgToPngDataUrl(svg)))).filter(
         (src): src is string => Boolean(src),
       );
