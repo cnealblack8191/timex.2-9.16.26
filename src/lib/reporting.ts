@@ -230,7 +230,12 @@ export function hoursByDay(entries: TimeEntry[], from: string, to: string) {
   const work = new Map<string, number>();
   const paid = new Map<string, number>();
   for (const entry of entries) {
-    const target = entry.entry_type === "work" ? work : paid;
+    if (entry.entry_type === "work") {
+      work.set(entry.work_date, (work.get(entry.work_date) ?? 0) + entryHours(entry));
+      continue;
+    }
+    if (entry.entry_type !== "pto" && entry.entry_type !== "holiday") continue; // legacy types
+    const target = paid;
     target.set(entry.work_date, (target.get(entry.work_date) ?? 0) + entryHours(entry));
   }
   return keys.map((key) => ({
