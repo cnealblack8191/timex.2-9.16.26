@@ -7,6 +7,7 @@ import {
 } from "@/lib/punch-photos.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
+import { TimeCardPanel } from "@/components/TimeCardPanel";
 import {
   useDivisions,
   useEmployees,
@@ -50,6 +51,7 @@ function TimeEntriesPage() {
   const [divisionFilter, setDivisionFilter] = useState("");
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [editing, setEditing] = useState<TimeEntry | null>(null);
+  const [cardEmployeeId, setCardEmployeeId] = useState<string | null>(null);
   const [draft, setDraft] = useState({ clock_in: "", clock_out: "", job_id: "", notes: "" });
   const [saving, setSaving] = useState(false);
   const [photo, setPhoto] = useState<{ url: string; label: string } | null>(null);
@@ -286,7 +288,13 @@ function TimeEntriesPage() {
                           <span className="text-[12px] text-muted-foreground">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-right">
+                      <td className="whitespace-nowrap px-3 py-3 text-right">
+                        <button
+                          onClick={() => setCardEmployeeId(entry.employee_id)}
+                          className="mr-3 text-[12px] font-semibold text-steel underline decoration-dotted"
+                        >
+                          Time Card
+                        </button>
                         <button
                           onClick={() => startEdit(entry)}
                           className="text-[12px] font-semibold text-amber-deep"
@@ -417,6 +425,18 @@ function TimeEntriesPage() {
           Loading photo…
         </div>
       )}
+
+      {cardEmployeeId &&
+        (() => {
+          const emp = employeeById.get(cardEmployeeId);
+          return emp ? (
+            <TimeCardPanel
+              employee={emp}
+              anchor={anchor}
+              onClose={() => setCardEmployeeId(null)}
+            />
+          ) : null;
+        })()}
 
       {photo && (
         <div
