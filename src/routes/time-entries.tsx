@@ -7,6 +7,7 @@ import {
 } from "@/lib/punch-photos.functions";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
+import { TimeCardPanel } from "@/components/TimeCardPanel";
 import {
   useDivisions,
   useEmployees,
