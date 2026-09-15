@@ -43,7 +43,7 @@ export const fullName = (e: Employee) => `${e.first_name} ${e.last_name}`;
 export const jobLabel = (j?: Job | null) =>
   j ? `#${j.number} · ${j.name}` : "Unassigned";
 
-/* ---------- week math: payroll week runs Monday through Saturday ---------- */
+/* ---------- week math: payroll week runs Sunday through Saturday ---------- */
 
 export function toDateKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
