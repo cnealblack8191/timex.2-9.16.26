@@ -74,30 +74,37 @@ export const getPunchPhotoUrl = createServerFn({ method: "POST" })
 
 /** Deletes photos older than the retention window and clears their references. */
 export const purgeOldPunchPhotos = createServerFn({ method: "POST" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const cutoff = new Date(Date.now() - PHOTO_RETENTION_DAYS * 86400000)
-    .toISOString()
-    .slice(0, 10);
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const cutoff = new Date(Date.now() - PHOTO_RETENTION_DAYS * 86400000)
+      .toISOString()
+      .slice(0, 10);
 
-  const { data: rows, error } = await supabaseAdmin
-    .from("time_entries")
-    .select("id,clock_in_photo,clock_out_photo")
-    .lt("work_date", cutoff)
-    .or("clock_in_photo.not.is.null,clock_out_photo.not.is.null")
-    .limit(500);
-  if (error) throw error;
-  if (!rows || rows.length === 0) return { removed: 0 };
+    const { data: rows, error } = await supabaseAdmin
+      .from("time_entries")
+      .select("id,clock_in_photo,clock_out_photo")
+      .lt("work_date", cutoff)
+      .or("clock_in_photo.not.is.null,clock_out_photo.not.is.null")
+      .limit(500);
+    if (error) throw error;
+    if (!rows || rows.length === 0) return { removed: 0 };
 
-  const paths = rows.flatMap((r) =>
-    [r.clock_in_photo, r.clock_out_photo].filter((p): p is string => Boolean(p)),
-  );
-  if (paths.length > 0) await supabaseAdmin.storage.from(BUCKET).remove(paths);
-  await supabaseAdmin
-    .from("time_entries")
-    .update({ clock_in_photo: null, clock_out_photo: null })
-    .in(
-      "id",
-      rows.map((r) => r.id),
+    const paths = rows.flatMap((r) =>
+      [r.clock_in_photo, r.clock_out_photo].filter((p): p is string => Boolean(p)),
     );
-  return { removed: paths.length };
+    if (paths.length > 0) await supabaseAdmin.storage.from(BUCKET).remove(paths);
+    await supabaseAdmin
+      .from("time_entries")
+      .update({ clock_in_photo: null, clock_out_photo: null })
+      .in(
+        "id",
+        rows.map((r) => r.id),
+      );
+    return { removed: paths.length };
+  } catch (err) {
+    // Background housekeeping must never break the page it runs from.
+    console.error("purgeOldPunchPhotos skipped:", err);
+    return { removed: 0 };
+  }
 });
+
