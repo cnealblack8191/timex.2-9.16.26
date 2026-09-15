@@ -1,4 +1,5 @@
 import { createFileRoute, useLocation } from "@tanstack/react-router";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
