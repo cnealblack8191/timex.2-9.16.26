@@ -37,8 +37,8 @@ const TILES = [
   },
   {
     to: "/pto",
-    label: "PTO & Vacation",
-    description: "Enter paid time off or vacation pay for one or many employees.",
+    label: "PTO & Holiday",
+    description: "Enter paid time off or holiday pay for one or many employees.",
   },
   {
     to: "/payroll",

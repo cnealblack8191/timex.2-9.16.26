@@ -246,7 +246,7 @@ function TimeEntriesPage() {
                           ? jobLabel(jobById.get(entry.job_id ?? ""))
                           : entry.entry_type === "pto"
                             ? "PTO"
-                            : "Vacation"}
+                            : "Holiday"}
                         {entry.job_overridden && (
                           <span className="ml-2 rounded bg-amber/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-deep">
                             Override

@@ -78,11 +78,11 @@ function PayrollPage() {
         const ptoHours = mine
           .filter((e) => e.entry_type === "pto")
           .reduce((sum, e) => sum + entryHours(e), 0);
-        const vacationHours = mine
-          .filter((e) => e.entry_type === "vacation")
+        const holidayHours = mine
+          .filter((e) => e.entry_type === "holiday")
           .reduce((sum, e) => sum + entryHours(e), 0);
-        const total = workTotal + ptoHours + vacationHours;
-        return { emp, perDay, workTotal, total, ptoHours, vacationHours };
+        const total = workTotal + ptoHours + holidayHours;
+        return { emp, perDay, workTotal, total, ptoHours, holidayHours };
       })
       .sort((a, b) => {
         const hasA = a.total > 0 ? 1 : 0;
@@ -97,6 +97,11 @@ function PayrollPage() {
 
   const grand = rows.reduce((sum, r) => sum + r.total, 0);
   const otPeople = rows.filter((r) => r.workTotal > OVERTIME_THRESHOLD);
+  // Overtime comes from worked hours only — PTO and holiday never count toward 40.
+  const overtimeTotal = rows.reduce(
+    (sum, r) => sum + Math.max(0, r.workTotal - OVERTIME_THRESHOLD),
+    0,
+  );
 
   function exportCsv() {
     const header = [
@@ -105,7 +110,7 @@ function PayrollPage() {
       "Assigned Job",
       ...days.map((d) => d.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
       "PTO Hours",
-      "Vacation Hours",
+      "Holiday Hours",
       "Total Hours",
       "Regular Hours",
       "Overtime Hours",
@@ -118,7 +123,7 @@ function PayrollPage() {
         jobLabel(jobById.get(r.emp.assigned_job_id ?? "")),
         ...r.perDay.map((h) => h.toFixed(2)),
         r.ptoHours.toFixed(2),
-        r.vacationHours.toFixed(2),
+        r.holidayHours.toFixed(2),
         r.total.toFixed(2),
         (r.workTotal - ot).toFixed(2),
         ot.toFixed(2),
@@ -141,10 +146,7 @@ function PayrollPage() {
       import("jspdf-autotable"),
     ]);
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "letter" });
-    const overtimeHours = otPeople.reduce(
-      (sum, row) => sum + (row.workTotal - OVERTIME_THRESHOLD),
-      0,
-    );
+    const overtimeHours = overtimeTotal;
 
     const logoBase64 = await imageToBase64(logoAsset.url);
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -172,7 +174,7 @@ function PayrollPage() {
         "Assigned Job",
         ...days.map((day) => day.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
         "PTO",
-        "Vacation",
+        "Holiday",
         "Regular",
         "OT",
         "Total",
@@ -185,7 +187,7 @@ function PayrollPage() {
           jobLabel(jobById.get(row.emp.assigned_job_id ?? "")),
           ...row.perDay.map((hours) => (hours ? hours.toFixed(2) : "-")),
           row.ptoHours ? row.ptoHours.toFixed(2) : "-",
-          row.vacationHours ? row.vacationHours.toFixed(2) : "-",
+          row.holidayHours ? row.holidayHours.toFixed(2) : "-",
           (row.workTotal - overtime).toFixed(2),
           overtime ? overtime.toFixed(2) : "-",
           row.total.toFixed(2),
@@ -199,7 +201,7 @@ function PayrollPage() {
           rows.reduce((sum, row) => sum + (row.perDay[index] ?? 0), 0).toFixed(2),
         ),
         rows.reduce((sum, row) => sum + row.ptoHours, 0).toFixed(2),
-        rows.reduce((sum, row) => sum + row.vacationHours, 0).toFixed(2),
+        rows.reduce((sum, row) => sum + row.holidayHours, 0).toFixed(2),
         rows.reduce((sum, row) => sum + Math.min(row.workTotal, OVERTIME_THRESHOLD), 0).toFixed(2),
         overtimeHours.toFixed(2),
         grand.toFixed(2),
@@ -272,20 +274,18 @@ function PayrollPage() {
         {[
           { label: "Total hours", value: grand.toFixed(1) },
           { label: "Employees paid", value: String(rows.length) },
-          { label: "Over 40 hrs", value: String(otPeople.length) },
+          { label: "Over 40 hrs worked", value: String(otPeople.length) },
           {
             label: "Overtime hours",
-            value: otPeople
-              .reduce((sum, r) => sum + (r.total - OVERTIME_THRESHOLD), 0)
-              .toFixed(1),
+            value: overtimeTotal.toFixed(1),
           },
           {
             label: "PTO hours",
             value: rows.reduce((sum, r) => sum + r.ptoHours, 0).toFixed(1),
           },
           {
-            label: "Vacation hours",
-            value: rows.reduce((sum, r) => sum + r.vacationHours, 0).toFixed(1),
+            label: "Holiday hours",
+            value: rows.reduce((sum, r) => sum + r.holidayHours, 0).toFixed(1),
           },
         ].map((stat) => (
           <Panel key={stat.label} className="animate-rise p-4">
@@ -309,7 +309,7 @@ function PayrollPage() {
                   </th>
                 ))}
                 <th className="px-3 py-2.5 text-right font-semibold">PTO</th>
-                <th className="px-3 py-2.5 text-right font-semibold">Vacation</th>
+                <th className="px-3 py-2.5 text-right font-semibold">Holiday</th>
                 <th className="px-4 py-2.5 text-right font-semibold">Total</th>
               </tr>
             </thead>
@@ -333,7 +333,7 @@ function PayrollPage() {
                       {r.ptoHours ? r.ptoHours.toFixed(2) : "—"}
                     </td>
                     <td className="px-3 py-2.5 text-right font-mono text-steel">
-                      {r.vacationHours ? r.vacationHours.toFixed(2) : "—"}
+                      {r.holidayHours ? r.holidayHours.toFixed(2) : "—"}
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <span

@@ -43,14 +43,14 @@ function formatHours(hours: number | null): string {
 
 /* ---------- cell addressing ---------- */
 
-type RowKind = { type: "work"; jobId: string } | { type: "pto" } | { type: "vacation" };
+type RowKind = { type: "work"; jobId: string } | { type: "pto" } | { type: "holiday" };
 
 const rowKey = (kind: RowKind) => (kind.type === "work" ? `work:${kind.jobId}` : kind.type);
 const cellKey = (kind: RowKind, dateKey: string) => `${rowKey(kind)}|${dateKey}`;
 
 function kindOf(entry: TimeEntry): RowKind {
   if (entry.entry_type === "pto") return { type: "pto" };
-  if (entry.entry_type === "vacation") return { type: "vacation" };
+  if (entry.entry_type === "holiday") return { type: "holiday" };
   return { type: "work", jobId: entry.job_id ?? "" };
 }
 
@@ -153,7 +153,7 @@ export function TimeCardPanel({
     () => [
       ...workJobIds.map((jobId): RowKind => ({ type: "work", jobId })),
       { type: "pto" },
-      { type: "vacation" },
+      { type: "holiday" },
     ],
     [workJobIds],
   );
@@ -346,12 +346,12 @@ export function TimeCardPanel({
                   );
                 })}
 
-                {(["pto", "vacation"] as const).map((type) => {
+                {(["pto", "holiday"] as const).map((type) => {
                   const kind: RowKind = { type };
                   return (
                     <tr key={type} className="border-b border-line/50 bg-ink/[0.015]">
                       <td className="px-2 py-1.5 font-semibold text-steel">
-                        {type === "pto" ? "PTO" : "Vacation"}
+                        {type === "pto" ? "PTO" : "Holiday"}
                       </td>
                       {days.map((dk) => (
                         <td key={dk} className="px-1 py-1.5">
