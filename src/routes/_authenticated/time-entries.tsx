@@ -15,6 +15,7 @@ import {
   useRangeEntries,
 } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
+import { useAccess } from "@/hooks/use-access";
 import {
   entryHours,
   formatDay,
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/_authenticated/time-entries")({
 });
 
 function TimeEntriesPage() {
+  const { access } = useAccess();
   const queryClient = useQueryClient();
   const [scope, setScope] = useState<"day" | "week">("week");
   const [anchor, setAnchor] = useState(toDateKey(new Date()));

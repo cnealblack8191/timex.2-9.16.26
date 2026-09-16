@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { useDivisions, useEmployees, useWeekEntries } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
+import { useAccess } from "@/hooks/use-access";
 import { entryHours, formatDay, fullName, toDateKey } from "@/lib/timekeeping";
 
 export const Route = createFileRoute("/_authenticated/pto")({
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/pto")({
 });
 
 function PtoPage() {
+  const { access } = useAccess();
   const queryClient = useQueryClient();
   const { data: employees = [] } = useEmployees();
   const { data: divisions = [] } = useDivisions();
