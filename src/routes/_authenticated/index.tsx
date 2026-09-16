@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import eciLogo from "@/assets/eci-logo.png.asset.json";
 import timexLogo from "@/assets/timex-logo.png.asset.json";
+import { useAccess } from "@/hooks/use-access";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "TimeX" },
@@ -53,13 +54,17 @@ const TILES = [
   {
     to: "/admin",
     label: "Admin",
-    description: "Manage employees, jobs, divisions, bulk assignments, and the kiosk code.",
+    description: "Manage employees, jobs, divisions, users, bulk assignments, and the kiosk code.",
+    adminOnly: true,
   },
 ] as const;
 
 function Home() {
+  const { access } = useAccess();
+  const tiles = TILES.filter((tile) => !("adminOnly" in tile) || access.isAdmin);
   return (
     <div className="page-wash flex min-h-screen w-full flex-col items-center justify-center bg-background px-6 py-10 text-foreground">
+
       <img
         src={eciLogo.url}
         alt="Electrical Contractor Inc."
@@ -77,7 +82,7 @@ function Home() {
       </p>
 
       <div className="mt-10 grid w-full max-w-[900px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TILES.map((tile) => (
+        {tiles.map((tile) => (
           <Link
             key={tile.to}
             to={tile.to}

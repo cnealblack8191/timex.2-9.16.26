@@ -58,10 +58,12 @@ export function TimeCardPanel({
   employee,
   anchor,
   onClose,
+  readOnly = false,
 }: {
   employee: Employee;
   anchor: string;
   onClose: () => void;
+  readOnly?: boolean;
 }) {
   const queryClient = useQueryClient();
   const [weekAnchor, setWeekAnchor] = useState(anchor);
@@ -458,13 +460,19 @@ export function TimeCardPanel({
             >
               Reset changes
             </button>
-            <button
-              onClick={save}
-              disabled={saving || !dirty}
-              className="rounded-lg bg-ink px-4 py-2.5 text-[13px] font-semibold text-primary-foreground disabled:opacity-50"
-            >
-              {saving ? "Saving…" : "Save time card"}
-            </button>
+            {readOnly ? (
+              <span className="text-[12px] text-muted-foreground">
+                You can view this time card but not change it.
+              </span>
+            ) : (
+              <button
+                onClick={save}
+                disabled={saving || !dirty}
+                className="rounded-lg bg-ink px-4 py-2.5 text-[13px] font-semibold text-primary-foreground disabled:opacity-50"
+              >
+                {saving ? "Saving…" : "Save time card"}
+              </button>
+            )}
           </div>
         </div>
       </div>

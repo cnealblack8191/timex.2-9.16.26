@@ -4,9 +4,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { useDivisions, useEmployees, useWeekEntries } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
+import { useAccess } from "@/hooks/use-access";
 import { entryHours, formatDay, fullName, toDateKey } from "@/lib/timekeeping";
 
-export const Route = createFileRoute("/pto")({
+export const Route = createFileRoute("/_authenticated/pto")({
   head: () => ({
     meta: [
       { title: "TimeX" },
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/pto")({
 });
 
 function PtoPage() {
+  const { access } = useAccess();
   const queryClient = useQueryClient();
   const { data: employees = [] } = useEmployees();
   const { data: divisions = [] } = useDivisions();
@@ -38,6 +40,7 @@ function PtoPage() {
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
 
   const visible = employees.filter((e) => {
+    if (!access.canEdit(e)) return false;
     if (divisionFilter && e.division_id !== divisionFilter) return false;
     if (search && !fullName(e).toLowerCase().includes(search.toLowerCase())) return false;
     return true;

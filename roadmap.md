@@ -38,3 +38,10 @@ Open:
 - No manager login yet — the portal is open to anyone with the link.
 - Employee data is sample data until the existing ECI system is connected.
 - Punch photos currently live in Supabase storage; moving them to AWS S3 is pending your go-ahead.
+
+## Logins & permissions (done)
+- [x] Office sign-in required; kiosk stays open
+- [x] Roles: Admin, Payroll (all divisions, edit only granted groups/people), View only
+- [x] Admin → Users tab: create with temp password, set role + divisions, deactivate
+- [x] Division scoping across the office pages (enforced in the database)
+- [x] Admin account charles@ecinc.us

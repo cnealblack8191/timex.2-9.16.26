@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/assignments")({
+export const Route = createFileRoute("/_authenticated/assignments")({
   head: () => ({
     meta: [
       { title: "TimeX" },

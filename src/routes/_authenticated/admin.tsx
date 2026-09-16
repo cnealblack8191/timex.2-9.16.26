@@ -4,11 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { KioskCodeForm } from "@/components/KioskCodeForm";
+import { UsersSection } from "@/components/UsersSection";
+import { useAccess } from "@/hooks/use-access";
 import { useDivisions, useJobs, useAllEmployees } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
 import { fullName, jobLabel, type Division, type Employee, type Job } from "@/lib/timekeeping";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "TimeX" },
@@ -22,7 +24,7 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
-type Tab = "employees" | "bulk-assign" | "jobs" | "divisions" | "kiosk";
+type Tab = "employees" | "bulk-assign" | "jobs" | "divisions" | "users" | "kiosk";
 
 /** Brings the edit panel into view when a row is opened (it sits below the table on narrow screens). */
 function useScrollToEditor(open: boolean) {
@@ -37,6 +39,17 @@ function AdminPage() {
   const location = useLocation();
   const initialTab = new URLSearchParams(location.search).get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initialTab ?? "employees");
+  const { access, isLoading } = useAccess();
+
+  if (!isLoading && !access.isAdmin) {
+    return (
+      <PortalShell title="Admin" subtitle="Administrators only">
+        <Panel className="p-6 text-[13px] text-muted-foreground">
+          You don't have access to this area. Ask an administrator if you need it.
+        </Panel>
+      </PortalShell>
+    );
+  }
 
   return (
     <PortalShell
@@ -49,6 +62,7 @@ function AdminPage() {
             { key: "bulk-assign", label: "Bulk Assign" },
             { key: "jobs", label: "Jobs" },
             { key: "divisions", label: "Divisions" },
+            { key: "users", label: "Users" },
             { key: "kiosk", label: "Kiosk Code" },
           ].map((t) => (
             <button
@@ -68,6 +82,7 @@ function AdminPage() {
       {tab === "bulk-assign" && <BulkAssignSection />}
       {tab === "jobs" && <JobsSection />}
       {tab === "divisions" && <DivisionsSection />}
+      {tab === "users" && <UsersSection />}
       {tab === "kiosk" && (
         <div className="max-w-xl">
           <KioskCodeForm />

@@ -1,17 +1,56 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLiveTimekeeping } from "@/hooks/use-timekeeping";
+import { useAccess } from "@/hooks/use-access";
+import { supabase } from "@/integrations/supabase/client";
 import eciLogo from "@/assets/eci-logo.png.asset.json";
 
-const NAV = [
-  { to: "/", label: "Home" },
-  { to: "/operations", label: "Operations" },
-  { to: "/time-entries", label: "Time Entries" },
-  { to: "/pto", label: "PTO & Holiday" },
-  { to: "/reports", label: "Reports" },
-  { to: "/payroll", label: "Payroll" },
-  { to: "/admin", label: "Admin" },
+export const NAV = [
+  { to: "/", label: "Home", adminOnly: false },
+  { to: "/operations", label: "Operations", adminOnly: false },
+  { to: "/time-entries", label: "Time Entries", adminOnly: false },
+  { to: "/pto", label: "PTO & Holiday", adminOnly: false },
+  { to: "/reports", label: "Reports", adminOnly: false },
+  { to: "/payroll", label: "Payroll", adminOnly: false },
+  { to: "/admin", label: "Admin", adminOnly: true },
 ] as const;
+
+const ROLE_LABEL: Record<string, string> = {
+  admin: "Administrator",
+  payroll: "Payroll",
+  viewer: "View only",
+};
+
+function AccountMenu() {
+  const { access } = useAccess();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    queryClient.clear();
+    navigate({ to: "/auth", replace: true });
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="hidden text-right leading-tight sm:block">
+        <div className="text-[12px] font-semibold">{access.displayName || access.email}</div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+          {access.role ? ROLE_LABEL[access.role] : "No access"}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={signOut}
+        className="rounded-lg bg-card/70 px-3 py-2 text-[12px] font-semibold text-steel ring-1 ring-ink/5 transition-colors hover:bg-card"
+      >
+        Sign out
+      </button>
+    </div>
+  );
+}
 
 export function PortalShell({
   title,
@@ -25,6 +64,8 @@ export function PortalShell({
   children: ReactNode;
 }) {
   useLiveTimekeeping();
+  const { access } = useAccess();
+  const nav = NAV.filter((item) => !item.adminOnly || access.isAdmin);
 
   return (
     <div className="page-wash min-h-screen w-full bg-background text-foreground">
@@ -44,7 +85,7 @@ export function PortalShell({
             </div>
           </Link>
           <nav className="flex items-center gap-1 text-[13px] font-medium text-steel">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -56,12 +97,7 @@ export function PortalShell({
               </Link>
             ))}
           </nav>
-          <Link
-            to="/kiosk"
-            className="rounded-lg bg-card/70 px-3 py-2 text-[12px] font-semibold text-steel ring-1 ring-ink/5 transition-colors hover:bg-card"
-          >
-            Open kiosk
-          </Link>
+          <AccountMenu />
         </div>
       </header>
 

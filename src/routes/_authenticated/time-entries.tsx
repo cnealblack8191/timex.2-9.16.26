@@ -15,6 +15,7 @@ import {
   useRangeEntries,
 } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
+import { useAccess } from "@/hooks/use-access";
 import {
   entryHours,
   formatDay,
@@ -30,7 +31,7 @@ import {
   type TimeEntry,
 } from "@/lib/timekeeping";
 
-export const Route = createFileRoute("/time-entries")({
+export const Route = createFileRoute("/_authenticated/time-entries")({
   head: () => ({
     meta: [
       { title: "TimeX" },
@@ -43,6 +44,7 @@ export const Route = createFileRoute("/time-entries")({
 });
 
 function TimeEntriesPage() {
+  const { access } = useAccess();
   const queryClient = useQueryClient();
   const [scope, setScope] = useState<"day" | "week">("week");
   const [anchor, setAnchor] = useState(toDateKey(new Date()));
@@ -295,12 +297,14 @@ function TimeEntriesPage() {
                         >
                           Time Card
                         </button>
-                        <button
-                          onClick={() => startEdit(entry)}
-                          className="text-[12px] font-semibold text-amber-deep"
-                        >
-                          Edit
-                        </button>
+                        {access.canEdit(employeeById.get(entry.employee_id)) && (
+                          <button
+                            onClick={() => startEdit(entry)}
+                            className="text-[12px] font-semibold text-amber-deep"
+                          >
+                            Edit
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -433,6 +437,7 @@ function TimeEntriesPage() {
             <TimeCardPanel
               employee={emp}
               anchor={anchor}
+              readOnly={!access.canEdit(emp)}
               onClose={() => setCardEmployeeId(null)}
             />
           ) : null;

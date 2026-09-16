@@ -9,24 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AdjustmentsRouteImport } from './routes/adjustments'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as AssignmentsRouteImport } from './routes/assignments'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as KioskRouteImport } from './routes/kiosk'
-import { Route as OperationsRouteImport } from './routes/operations'
-import { Route as PayrollRouteImport } from './routes/payroll'
-import { Route as PtoRouteImport } from './routes/pto'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as TimeEntriesRouteImport } from './routes/time-entries'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAssignmentsRouteImport } from './routes/_authenticated/assignments'
+import { Route as AuthenticatedOperationsRouteImport } from './routes/_authenticated/operations'
+import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
+import { Route as AuthenticatedPtoRouteImport } from './routes/_authenticated/pto'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedTimeEntriesRouteImport } from './routes/_authenticated/time-entries'
 import { Route as ApiPublicKioskBootstrapRouteImport } from './routes/api/public/kiosk/bootstrap'
 import { Route as ApiPublicKioskPunchRouteImport } from './routes/api/public/kiosk/punch'
 import { Route as ApiPublicKioskStatusRouteImport } from './routes/api/public/kiosk/status'
 import { Route as ApiPublicKioskVerifyPinRouteImport } from './routes/api/public/kiosk/verify-pin'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdjustmentsRoute = AdjustmentsRouteImport.update({
@@ -34,14 +35,9 @@ const AdjustmentsRoute = AdjustmentsRouteImport.update({
   path: '/adjustments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssignmentsRoute = AssignmentsRouteImport.update({
-  id: '/assignments',
-  path: '/assignments',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KioskRoute = KioskRouteImport.update({
@@ -49,31 +45,48 @@ const KioskRoute = KioskRouteImport.update({
   path: '/kiosk',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OperationsRoute = OperationsRouteImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAssignmentsRoute =
+  AuthenticatedAssignmentsRouteImport.update({
+    id: '/assignments',
+    path: '/assignments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedOperationsRoute = AuthenticatedOperationsRouteImport.update({
   id: '/operations',
   path: '/operations',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const PayrollRoute = PayrollRouteImport.update({
+const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
   id: '/payroll',
   path: '/payroll',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const PtoRoute = PtoRouteImport.update({
+const AuthenticatedPtoRoute = AuthenticatedPtoRouteImport.update({
   id: '/pto',
   path: '/pto',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ReportsRoute = ReportsRouteImport.update({
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const TimeEntriesRoute = TimeEntriesRouteImport.update({
-  id: '/time-entries',
-  path: '/time-entries',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const AuthenticatedTimeEntriesRoute =
+  AuthenticatedTimeEntriesRouteImport.update({
+    id: '/time-entries',
+    path: '/time-entries',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicKioskBootstrapRoute = ApiPublicKioskBootstrapRouteImport.update({
   id: '/api/public/kiosk/bootstrap',
   path: '/api/public/kiosk/bootstrap',
@@ -96,32 +109,34 @@ const ApiPublicKioskVerifyPinRoute = ApiPublicKioskVerifyPinRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/adjustments': typeof AdjustmentsRoute
-  '/admin': typeof AdminRoute
-  '/assignments': typeof AssignmentsRoute
+  '/auth': typeof AuthRoute
   '/kiosk': typeof KioskRoute
-  '/operations': typeof OperationsRoute
-  '/payroll': typeof PayrollRoute
-  '/pto': typeof PtoRoute
-  '/reports': typeof ReportsRoute
-  '/time-entries': typeof TimeEntriesRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/operations': typeof AuthenticatedOperationsRoute
+  '/payroll': typeof AuthenticatedPayrollRoute
+  '/pto': typeof AuthenticatedPtoRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/time-entries': typeof AuthenticatedTimeEntriesRoute
   '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
   '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
   '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
   '/api/public/kiosk/verify-pin': typeof ApiPublicKioskVerifyPinRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/adjustments': typeof AdjustmentsRoute
-  '/admin': typeof AdminRoute
-  '/assignments': typeof AssignmentsRoute
+  '/auth': typeof AuthRoute
   '/kiosk': typeof KioskRoute
-  '/operations': typeof OperationsRoute
-  '/payroll': typeof PayrollRoute
-  '/pto': typeof PtoRoute
-  '/reports': typeof ReportsRoute
-  '/time-entries': typeof TimeEntriesRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/assignments': typeof AuthenticatedAssignmentsRoute
+  '/operations': typeof AuthenticatedOperationsRoute
+  '/payroll': typeof AuthenticatedPayrollRoute
+  '/pto': typeof AuthenticatedPtoRoute
+  '/reports': typeof AuthenticatedReportsRoute
+  '/time-entries': typeof AuthenticatedTimeEntriesRoute
+  '/': typeof AuthenticatedIndexRoute
   '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
   '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
   '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
@@ -129,16 +144,18 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/adjustments': typeof AdjustmentsRoute
-  '/admin': typeof AdminRoute
-  '/assignments': typeof AssignmentsRoute
+  '/auth': typeof AuthRoute
   '/kiosk': typeof KioskRoute
-  '/operations': typeof OperationsRoute
-  '/payroll': typeof PayrollRoute
-  '/pto': typeof PtoRoute
-  '/reports': typeof ReportsRoute
-  '/time-entries': typeof TimeEntriesRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/assignments': typeof AuthenticatedAssignmentsRoute
+  '/_authenticated/operations': typeof AuthenticatedOperationsRoute
+  '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
+  '/_authenticated/pto': typeof AuthenticatedPtoRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/time-entries': typeof AuthenticatedTimeEntriesRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
   '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
   '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
@@ -149,9 +166,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/adjustments'
+    | '/auth'
+    | '/kiosk'
     | '/admin'
     | '/assignments'
-    | '/kiosk'
     | '/operations'
     | '/payroll'
     | '/pto'
@@ -163,32 +181,35 @@ export interface FileRouteTypes {
     | '/api/public/kiosk/verify-pin'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/adjustments'
+    | '/auth'
+    | '/kiosk'
     | '/admin'
     | '/assignments'
-    | '/kiosk'
     | '/operations'
     | '/payroll'
     | '/pto'
     | '/reports'
     | '/time-entries'
+    | '/'
     | '/api/public/kiosk/bootstrap'
     | '/api/public/kiosk/punch'
     | '/api/public/kiosk/status'
     | '/api/public/kiosk/verify-pin'
   id:
     | '__root__'
-    | '/'
+    | '/_authenticated'
     | '/adjustments'
-    | '/admin'
-    | '/assignments'
+    | '/auth'
     | '/kiosk'
-    | '/operations'
-    | '/payroll'
-    | '/pto'
-    | '/reports'
-    | '/time-entries'
+    | '/_authenticated/admin'
+    | '/_authenticated/assignments'
+    | '/_authenticated/operations'
+    | '/_authenticated/payroll'
+    | '/_authenticated/pto'
+    | '/_authenticated/reports'
+    | '/_authenticated/time-entries'
+    | '/_authenticated/'
     | '/api/public/kiosk/bootstrap'
     | '/api/public/kiosk/punch'
     | '/api/public/kiosk/status'
@@ -196,16 +217,10 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdjustmentsRoute: typeof AdjustmentsRoute
-  AdminRoute: typeof AdminRoute
-  AssignmentsRoute: typeof AssignmentsRoute
+  AuthRoute: typeof AuthRoute
   KioskRoute: typeof KioskRoute
-  OperationsRoute: typeof OperationsRoute
-  PayrollRoute: typeof PayrollRoute
-  PtoRoute: typeof PtoRoute
-  ReportsRoute: typeof ReportsRoute
-  TimeEntriesRoute: typeof TimeEntriesRoute
   ApiPublicKioskBootstrapRoute: typeof ApiPublicKioskBootstrapRoute
   ApiPublicKioskPunchRoute: typeof ApiPublicKioskPunchRoute
   ApiPublicKioskStatusRoute: typeof ApiPublicKioskStatusRoute
@@ -214,11 +229,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/adjustments': {
@@ -228,18 +243,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdjustmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assignments': {
-      id: '/assignments'
-      path: '/assignments'
-      fullPath: '/assignments'
-      preLoaderRoute: typeof AssignmentsRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kiosk': {
@@ -249,40 +257,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KioskRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/operations': {
-      id: '/operations'
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/assignments': {
+      id: '/_authenticated/assignments'
+      path: '/assignments'
+      fullPath: '/assignments'
+      preLoaderRoute: typeof AuthenticatedAssignmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/operations': {
+      id: '/_authenticated/operations'
       path: '/operations'
       fullPath: '/operations'
-      preLoaderRoute: typeof OperationsRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedOperationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/payroll': {
-      id: '/payroll'
+    '/_authenticated/payroll': {
+      id: '/_authenticated/payroll'
       path: '/payroll'
       fullPath: '/payroll'
-      preLoaderRoute: typeof PayrollRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedPayrollRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/pto': {
-      id: '/pto'
+    '/_authenticated/pto': {
+      id: '/_authenticated/pto'
       path: '/pto'
       fullPath: '/pto'
-      preLoaderRoute: typeof PtoRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedPtoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/reports': {
-      id: '/reports'
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
       path: '/reports'
       fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/time-entries': {
-      id: '/time-entries'
+    '/_authenticated/time-entries': {
+      id: '/_authenticated/time-entries'
       path: '/time-entries'
       fullPath: '/time-entries'
-      preLoaderRoute: typeof TimeEntriesRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedTimeEntriesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/kiosk/bootstrap': {
       id: '/api/public/kiosk/bootstrap'
@@ -315,17 +344,36 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAssignmentsRoute: typeof AuthenticatedAssignmentsRoute
+  AuthenticatedOperationsRoute: typeof AuthenticatedOperationsRoute
+  AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
+  AuthenticatedPtoRoute: typeof AuthenticatedPtoRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedTimeEntriesRoute: typeof AuthenticatedTimeEntriesRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAssignmentsRoute: AuthenticatedAssignmentsRoute,
+  AuthenticatedOperationsRoute: AuthenticatedOperationsRoute,
+  AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
+  AuthenticatedPtoRoute: AuthenticatedPtoRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedTimeEntriesRoute: AuthenticatedTimeEntriesRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdjustmentsRoute: AdjustmentsRoute,
-  AdminRoute: AdminRoute,
-  AssignmentsRoute: AssignmentsRoute,
+  AuthRoute: AuthRoute,
   KioskRoute: KioskRoute,
-  OperationsRoute: OperationsRoute,
-  PayrollRoute: PayrollRoute,
-  PtoRoute: PtoRoute,
-  ReportsRoute: ReportsRoute,
-  TimeEntriesRoute: TimeEntriesRoute,
   ApiPublicKioskBootstrapRoute: ApiPublicKioskBootstrapRoute,
   ApiPublicKioskPunchRoute: ApiPublicKioskPunchRoute,
   ApiPublicKioskStatusRoute: ApiPublicKioskStatusRoute,
