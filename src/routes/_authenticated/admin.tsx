@@ -62,6 +62,7 @@ function AdminPage() {
             { key: "bulk-assign", label: "Bulk Assign" },
             { key: "jobs", label: "Jobs" },
             { key: "divisions", label: "Divisions" },
+            { key: "users", label: "Users" },
             { key: "kiosk", label: "Kiosk Code" },
           ].map((t) => (
             <button
