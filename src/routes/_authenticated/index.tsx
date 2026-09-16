@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import eciLogo from "@/assets/eci-logo.png.asset.json";
 import timexLogo from "@/assets/timex-logo.png.asset.json";
+import { useAccess } from "@/hooks/use-access";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -81,7 +82,7 @@ function Home() {
       </p>
 
       <div className="mt-10 grid w-full max-w-[900px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TILES.map((tile) => (
+        {tiles.map((tile) => (
           <Link
             key={tile.to}
             to={tile.to}
