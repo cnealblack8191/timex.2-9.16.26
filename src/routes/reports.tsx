@@ -44,6 +44,7 @@ import {
   type ReportRow,
   type SortBy,
 } from "@/lib/reporting";
+import { exportEmployeeReportsPdf } from "@/lib/employee-report-pdf";
 import {
   entryHours,
   formatTime,
@@ -413,6 +414,25 @@ function ReportsPage() {
     doc.save(`${fileBase}.pdf`);
   }
 
+  async function exportPerEmployeePdf() {
+    const ordered = [...filteredEmployees].sort((a, b) =>
+      sortBy === "last"
+        ? `${a.last_name} ${a.first_name}`.localeCompare(`${b.last_name} ${b.first_name}`)
+        : `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`),
+    );
+    const ok = await exportEmployeeReportsPdf({
+      employees: ordered,
+      entries: filteredEntries,
+      jobs,
+      divisions,
+      from,
+      to,
+      fileName: `timex-report-by-employee-${from}-to-${to}.pdf`,
+      title: "Hours report",
+    });
+    if (!ok) window.alert("No hours in this period for the selected filters.");
+  }
+
   return (
     <PortalShell
       title="Reports"
@@ -438,6 +458,9 @@ function ReportsPage() {
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => void exportPdf()}>
                 <FileText aria-hidden="true" /> Download PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportPerEmployeePdf()}>
+                <FileText aria-hidden="true" /> PDF — one per employee
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
