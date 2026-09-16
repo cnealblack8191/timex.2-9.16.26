@@ -45,3 +45,16 @@ Open:
 - [x] Admin → Users tab: create with temp password, set role + divisions, deactivate
 - [x] Division scoping across the office pages (enforced in the database)
 - [x] Admin account charles@ecinc.us
+
+## Hardening (2026-09-16) — see docs/HARDENING_2026-09-16.md
+- [x] Anonymous database access removed; web kiosk and adjustments run through server functions
+- [x] Supervisor code rate-limited, unlock issues a 15-minute token, code change is admin-only
+- [x] Punch photo lookup requires a login; purge moved to a cron route
+- [x] Office queries page past PostgREST's 1,000-row cap
+- [x] Backup web kiosk installable and opens offline (service worker + manifest)
+- [x] Offline clock-in then clock-out on the same device
+- [x] Rejected punches leave the offline queue and are shown on the kiosk
+- [x] Work dates computed in the company timezone (America/New_York)
+- [x] One open punch per employee enforced by the database
+- [ ] Per-employee kiosk code or badge number (buddy punching)
+- [ ] Audit trail, voided entries instead of deletes, close pay period
