@@ -232,7 +232,7 @@ function Operations() {
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-steel">
               Bulk Assign
             </span>
-            <span className="font-mono text-[11px] text-muted-foreground">By division</span>
+            <span className="font-mono text-[11px] text-muted-foreground">By group</span>
           </div>
           <div className="mb-4 space-y-2">
             {divisions.map((d) => {
@@ -281,7 +281,7 @@ function Operations() {
           </label>
           <div className="mb-4 text-[12px] text-muted-foreground">
             {assignNote ||
-              `${selectedCount} employees selected across ${selectedDivisions.length} divisions`}
+              `${selectedCount} employees selected across ${selectedDivisions.length} groups`}
           </div>
           <button
             onClick={bulkAssign}

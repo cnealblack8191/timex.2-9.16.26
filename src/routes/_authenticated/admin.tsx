@@ -14,9 +14,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "TimeX" },
-      { name: "description", content: "Manage divisions, jobs, employees, and kiosk settings." },
+      { name: "description", content: "Manage groups, jobs, employees, and kiosk settings." },
       { property: "og:title", content: "Admin — TimeX" },
-      { property: "og:description", content: "Manage divisions, jobs, employees, and kiosk settings." },
+      { property: "og:description", content: "Manage groups, jobs, employees, and kiosk settings." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -54,14 +54,14 @@ function AdminPage() {
   return (
     <PortalShell
       title="Admin"
-      subtitle="Manage divisions, jobs, employees, bulk assignments, and the kiosk supervisor code"
+      subtitle="Manage groups, jobs, employees, bulk assignments, and the kiosk supervisor code"
       actions={
         <div className="flex rounded-lg bg-card/70 p-1 ring-1 ring-ink/5">
           {[
             { key: "employees", label: "Employees" },
             { key: "bulk-assign", label: "Bulk Assign" },
             { key: "jobs", label: "Jobs" },
-            { key: "divisions", label: "Divisions" },
+            { key: "divisions", label: "Groups" },
             { key: "users", label: "Users" },
             { key: "kiosk", label: "Kiosk Code" },
           ].map((t) => (
@@ -198,9 +198,9 @@ function EmployeesSection() {
             value={filterDivision}
             onChange={(e) => setFilterDivision(e.target.value)}
             className="rounded-md border border-line/70 bg-card px-2.5 py-1.5 text-[12px] font-medium text-ink"
-            aria-label="Filter by division"
+            aria-label="Filter by group"
           >
-            <option value="">All divisions</option>
+            <option value="">All groups</option>
             {divisions.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
@@ -240,7 +240,7 @@ function EmployeesSection() {
             <thead className="sticky top-0 bg-card/90 backdrop-blur">
               <tr className="border-b border-line/70 text-left text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                 <th className="px-4 py-2.5 font-semibold">Name</th>
-                <th className="px-3 py-2.5 font-semibold">Division</th>
+                <th className="px-3 py-2.5 font-semibold">Group</th>
                 <th className="px-3 py-2.5 font-semibold">Assigned job</th>
                 <th className="px-3 py-2.5 font-semibold">Status</th>
                 <th className="px-3 py-2.5 text-right font-semibold">Edit</th>
@@ -325,7 +325,7 @@ function EmployeeEditRow({
         <select
           value={editing.division_id ?? ""}
           onChange={(e) => setEditing({ ...editing, division_id: e.target.value || null })}
-          aria-label="Division"
+          aria-label="Group"
           className="w-full rounded-md bg-card px-2 py-1.5 text-[13px] ring-1 ring-ink/10"
         >
           <option value="">— None —</option>
@@ -446,7 +446,7 @@ function BulkAssignSection() {
             onChange={(e) => setDivisionFilter(e.target.value)}
             className="rounded-md bg-card/80 px-2.5 py-1.5 text-[12px] font-medium text-steel ring-1 ring-ink/5"
           >
-            <option value="">All divisions</option>
+            <option value="">All groups</option>
             {divisions.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
@@ -466,7 +466,7 @@ function BulkAssignSection() {
             <thead className="sticky top-0 bg-card/90 backdrop-blur">
               <tr className="border-b border-line/70 text-left text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                 <th className="px-4 py-2.5 font-semibold">Employee</th>
-                <th className="px-3 py-2.5 font-semibold">Division</th>
+                <th className="px-3 py-2.5 font-semibold">Group</th>
                 <th className="px-3 py-2.5 font-semibold">Assigned job</th>
               </tr>
             </thead>
@@ -524,7 +524,7 @@ function BulkAssignSection() {
           Bulk Assign
         </span>
         <p className="mb-4 text-[13px] text-muted-foreground">
-          Tick employees on the left, or filter to a division and select them all, then choose the
+          Tick employees on the left, or filter to a group and select them all, then choose the
           job they should be on.
         </p>
         <label className="mb-3 block rounded-lg bg-ink/5 px-3 py-2.5">
@@ -715,7 +715,7 @@ function DivisionsSection() {
     if (error) {
       setMessage(error.message);
     } else {
-      setMessage(editing.id ? "Division updated." : "Division added.");
+      setMessage(editing.id ? "Group updated." : "Group added.");
       setEditing(null);
       queryClient.invalidateQueries({ queryKey: ["divisions"] });
     }
@@ -725,12 +725,12 @@ function DivisionsSection() {
     <div className="grid grid-cols-12 gap-5">
       <Panel className="col-span-12 flex flex-col overflow-hidden xl:col-span-8">
         <div className="flex items-center justify-between border-b border-line/70 px-4 py-3">
-          <span className="text-[13px] font-bold">Divisions</span>
+          <span className="text-[13px] font-bold">Groups</span>
           <button
             onClick={() => setEditing({ id: "", name: "", code: "" })}
             className="rounded-md bg-ink px-3 py-1.5 text-[12px] font-semibold text-primary-foreground"
           >
-            Add division
+            Add group
           </button>
         </div>
         <div className="max-h-[640px] overflow-auto">
@@ -766,7 +766,7 @@ function DivisionsSection() {
         <Panel className="col-span-12 self-start xl:col-span-4">
           <div ref={editorRef} className="scroll-mt-24" />
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-[13px] font-bold">{editing.id ? "Edit division" : "Add division"}</span>
+            <span className="text-[13px] font-bold">{editing.id ? "Edit group" : "Add group"}</span>
             <button onClick={() => setEditing(null)} className="text-[12px] text-steel hover:text-ink">
               Cancel
             </button>
@@ -793,7 +793,7 @@ function DivisionsSection() {
               disabled={saving || !editing.name || !editing.code}
               className="skew-btn w-full rounded-xl bg-amber py-3 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:cursor-not-allowed disabled:bg-ink/10 disabled:text-ink/50"
             >
-              <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add division"}</span>
+              <span>{saving ? "Saving…" : editing.id ? "Save changes" : "Add group"}</span>
             </button>
             {message && <p className="text-[12px] font-semibold text-steel">{message}</p>}
           </div>

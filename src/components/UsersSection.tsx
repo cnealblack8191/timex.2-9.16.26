@@ -15,9 +15,9 @@ const ROLES: { value: AppRole; label: string; hint: string }[] = [
   {
     value: "payroll",
     label: "Payroll",
-    hint: "Sees every division, changes time only for assigned divisions",
+    hint: "Sees every group, changes time only for assigned groups",
   },
-  { value: "viewer", label: "View only", hint: "Read-only, limited to assigned divisions" },
+  { value: "viewer", label: "View only", hint: "Read-only, limited to assigned groups" },
 ];
 
 type Draft = {
@@ -146,7 +146,7 @@ export function UsersSection() {
       })}
       {disabled && (
         <span className="self-center text-[11.5px] text-muted-foreground">
-          Administrators always see every division.
+          Administrators always see every group.
         </span>
       )}
     </div>
@@ -245,7 +245,7 @@ export function UsersSection() {
               <th className="px-3 py-2 text-left">Name</th>
               <th className="px-3 py-2 text-left">Email</th>
               <th className="px-3 py-2 text-left">Role</th>
-              <th className="px-3 py-2 text-left">Divisions</th>
+              <th className="px-3 py-2 text-left">Groups</th>
               <th className="px-3 py-2 text-left">Status</th>
               <th className="px-3 py-2" />
             </tr>
