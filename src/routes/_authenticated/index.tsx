@@ -53,13 +53,17 @@ const TILES = [
   {
     to: "/admin",
     label: "Admin",
-    description: "Manage employees, jobs, divisions, bulk assignments, and the kiosk code.",
+    description: "Manage employees, jobs, divisions, users, bulk assignments, and the kiosk code.",
+    adminOnly: true,
   },
 ] as const;
 
 function Home() {
+  const { access } = useAccess();
+  const tiles = TILES.filter((tile) => !("adminOnly" in tile) || access.isAdmin);
   return (
     <div className="page-wash flex min-h-screen w-full flex-col items-center justify-center bg-background px-6 py-10 text-foreground">
+
       <img
         src={eciLogo.url}
         alt="Electrical Contractor Inc."
