@@ -35,6 +35,27 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_throttle: {
+        Row: {
+          failures: number
+          key: string
+          locked_until: string | null
+          window_start: string
+        }
+        Insert: {
+          failures?: number
+          key: string
+          locked_until?: string | null
+          window_start?: string
+        }
+        Update: {
+          failures?: number
+          key?: string
+          locked_until?: string | null
+          window_start?: string
+        }
+        Relationships: []
+      }
       divisions: {
         Row: {
           code: string
