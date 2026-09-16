@@ -37,6 +37,17 @@ function AdminPage() {
   const location = useLocation();
   const initialTab = new URLSearchParams(location.search).get("tab") as Tab | null;
   const [tab, setTab] = useState<Tab>(initialTab ?? "employees");
+  const { access, isLoading } = useAccess();
+
+  if (!isLoading && !access.isAdmin) {
+    return (
+      <PortalShell title="Admin" subtitle="Administrators only">
+        <Panel className="p-6 text-[13px] text-muted-foreground">
+          You don't have access to this area. Ask an administrator if you need it.
+        </Panel>
+      </PortalShell>
+    );
+  }
 
   return (
     <PortalShell
