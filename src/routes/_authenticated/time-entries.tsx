@@ -437,6 +437,7 @@ function TimeEntriesPage() {
             <TimeCardPanel
               employee={emp}
               anchor={anchor}
+              readOnly={!access.canEdit(emp)}
               onClose={() => setCardEmployeeId(null)}
             />
           ) : null;
