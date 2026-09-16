@@ -135,9 +135,9 @@ export function buildRows(input: ReportInput): ReportRow[] {
     }
   } else if (groupBy === "division") {
     for (const division of divisions) ensure(division.id, division.name, division.code, division.name);
-    ensure("none", "No division", "—", "zzz");
+    ensure("none", "No group", "—", "zzz");
   } else if (groupBy === "company") {
-    ensure("company", "Company total", "All divisions and jobs", "");
+    ensure("company", "Company total", "All groups and jobs", "");
   }
 
   for (const entry of entries) {
@@ -158,7 +158,7 @@ export function buildRows(input: ReportInput): ReportRow[] {
     } else if (groupBy === "division") {
       const division = divisionById.get(emp.division_id ?? "");
       key = division?.id ?? "none";
-      label = division?.name ?? "No division";
+      label = division?.name ?? "No group";
       sublabel = division?.code ?? "—";
       sortName = label;
     } else if (groupBy === "job") {
@@ -169,7 +169,7 @@ export function buildRows(input: ReportInput): ReportRow[] {
     } else {
       key = "company";
       label = "Company total";
-      sublabel = "All divisions and jobs";
+      sublabel = "All groups and jobs";
       sortName = "";
     }
 

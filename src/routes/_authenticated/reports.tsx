@@ -62,12 +62,12 @@ export const Route = createFileRoute("/_authenticated/reports")({
       { title: "TimeX" },
       {
         name: "description",
-        content: "Hours reports by employee, division, job, or company with charts and exports.",
+        content: "Hours reports by employee, group, job, or company with charts and exports.",
       },
       { property: "og:title", content: "Reports — TimeX" },
       {
         property: "og:description",
-        content: "Hours reports by employee, division, job, or company with charts and exports.",
+        content: "Hours reports by employee, group, job, or company with charts and exports.",
       },
     ],
   }),
@@ -284,7 +284,7 @@ function ReportsPage() {
     groupBy === "employee"
       ? "Employee"
       : groupBy === "division"
-        ? "Division"
+        ? "Group"
         : groupBy === "job"
           ? "Job"
           : "Company";
@@ -495,7 +495,7 @@ function ReportsPage() {
               className="rounded-lg bg-card/70 px-3 py-2 ring-1 ring-ink/5"
             >
               <option value="employee">Per employee</option>
-              <option value="division">Per division</option>
+              <option value="division">Per group</option>
               <option value="job">Per job</option>
               <option value="company">Company total</option>
             </select>
@@ -552,13 +552,13 @@ function ReportsPage() {
           </label>
 
           <label className="flex flex-col gap-1">
-            <span className="font-semibold uppercase tracking-[0.12em] text-muted-foreground">Division</span>
+            <span className="font-semibold uppercase tracking-[0.12em] text-muted-foreground">Group</span>
             <select
               value={divisionId}
               onChange={(e) => setDivisionId(e.target.value)}
               className="rounded-lg bg-card/70 px-3 py-2 ring-1 ring-ink/5"
             >
-              <option value="all">All divisions</option>
+              <option value="all">All groups</option>
               {divisions.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}

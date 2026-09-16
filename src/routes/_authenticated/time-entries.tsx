@@ -204,7 +204,7 @@ function TimeEntriesPage() {
               onChange={(e) => setDivisionFilter(e.target.value)}
               className={selectClass}
             >
-              <option value="">All divisions</option>
+              <option value="">All groups</option>
               {divisions.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}

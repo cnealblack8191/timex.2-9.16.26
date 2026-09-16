@@ -79,7 +79,7 @@ function PtoPage() {
   return (
     <PortalShell
       title="PTO & Holiday"
-      subtitle="Add paid time off or holiday pay for one employee or a whole division"
+      subtitle="Add paid time off or holiday pay for one employee or a whole group"
     >
       <div className="grid grid-cols-12 gap-5">
         <Panel className="col-span-12 flex flex-col overflow-hidden xl:col-span-7">
@@ -95,7 +95,7 @@ function PtoPage() {
               onChange={(e) => setDivisionFilter(e.target.value)}
               className="rounded-md bg-card/80 px-2.5 py-1.5 text-[12px] font-medium text-steel ring-1 ring-ink/5"
             >
-              <option value="">All divisions</option>
+              <option value="">All groups</option>
               {divisions.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}

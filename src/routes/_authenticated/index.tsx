@@ -44,7 +44,7 @@ const TILES = [
   {
     to: "/reports",
     label: "Reports",
-    description: "Charts and custom reports by employee, division, job, or company.",
+    description: "Charts and custom reports by employee, group, job, or company.",
   },
   {
     to: "/payroll",
@@ -54,7 +54,7 @@ const TILES = [
   {
     to: "/admin",
     label: "Admin",
-    description: "Manage employees, jobs, divisions, users, bulk assignments, and the kiosk code.",
+    description: "Manage employees, jobs, groups, users, bulk assignments, and the kiosk code.",
     adminOnly: true,
   },
 ] as const;

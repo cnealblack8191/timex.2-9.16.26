@@ -107,7 +107,7 @@ function PayrollPage() {
   function exportCsv() {
     const header = [
       "Employee",
-      "Division",
+      "Group",
       "Assigned Job",
       ...days.map((d) => d.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
       "PTO Hours",
@@ -171,7 +171,7 @@ function PayrollPage() {
       startY: 163,
       head: [[
         "Employee",
-        "Division",
+        "Group",
         "Assigned Job",
         ...days.map((day) => day.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
         "PTO",
