@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { KioskCodeForm } from "@/components/KioskCodeForm";
+import { UsersSection } from "@/components/UsersSection";
+import { useAccess } from "@/hooks/use-access";
 import { useDivisions, useJobs, useAllEmployees } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
 import { fullName, jobLabel, type Division, type Employee, type Job } from "@/lib/timekeeping";
@@ -22,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
-type Tab = "employees" | "bulk-assign" | "jobs" | "divisions" | "kiosk";
+type Tab = "employees" | "bulk-assign" | "jobs" | "divisions" | "users" | "kiosk";
 
 /** Brings the edit panel into view when a row is opened (it sits below the table on narrow screens). */
 function useScrollToEditor(open: boolean) {
