@@ -64,6 +64,8 @@ export function PortalShell({
   children: ReactNode;
 }) {
   useLiveTimekeeping();
+  const { access } = useAccess();
+  const nav = NAV.filter((item) => !item.adminOnly || access.isAdmin);
 
   return (
     <div className="page-wash min-h-screen w-full bg-background text-foreground">
@@ -83,7 +85,7 @@ export function PortalShell({
             </div>
           </Link>
           <nav className="flex items-center gap-1 text-[13px] font-medium text-steel">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -95,12 +97,7 @@ export function PortalShell({
               </Link>
             ))}
           </nav>
-          <Link
-            to="/kiosk"
-            className="rounded-lg bg-card/70 px-3 py-2 text-[12px] font-semibold text-steel ring-1 ring-ink/5 transition-colors hover:bg-card"
-          >
-            Open kiosk
-          </Link>
+          <AccountMenu />
         </div>
       </header>
 
