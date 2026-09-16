@@ -40,6 +40,7 @@ function PtoPage() {
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
 
   const visible = employees.filter((e) => {
+    if (!access.canEdit(e)) return false;
     if (divisionFilter && e.division_id !== divisionFilter) return false;
     if (search && !fullName(e).toLowerCase().includes(search.toLowerCase())) return false;
     return true;
