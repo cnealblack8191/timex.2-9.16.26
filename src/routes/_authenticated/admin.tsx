@@ -68,6 +68,7 @@ function AdminPage() {
       {tab === "bulk-assign" && <BulkAssignSection />}
       {tab === "jobs" && <JobsSection />}
       {tab === "divisions" && <DivisionsSection />}
+      {tab === "users" && <UsersSection />}
       {tab === "kiosk" && (
         <div className="max-w-xl">
           <KioskCodeForm />
