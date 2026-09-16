@@ -295,12 +295,14 @@ function TimeEntriesPage() {
                         >
                           Time Card
                         </button>
-                        <button
-                          onClick={() => startEdit(entry)}
-                          className="text-[12px] font-semibold text-amber-deep"
-                        >
-                          Edit
-                        </button>
+                        {access.canEdit(employeeById.get(entry.employee_id)) && (
+                          <button
+                            onClick={() => startEdit(entry)}
+                            className="text-[12px] font-semibold text-amber-deep"
+                          >
+                            Edit
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
