@@ -58,10 +58,12 @@ export function TimeCardPanel({
   employee,
   anchor,
   onClose,
+  readOnly = false,
 }: {
   employee: Employee;
   anchor: string;
   onClose: () => void;
+  readOnly?: boolean;
 }) {
   const queryClient = useQueryClient();
   const [weekAnchor, setWeekAnchor] = useState(anchor);
