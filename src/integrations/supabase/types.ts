@@ -176,8 +176,84 @@ export type Database = {
         }
         Relationships: []
       }
+      pay_periods: {
+        Row: {
+          closed_at: string
+          closed_by: string | null
+          closed_by_name: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          reopened_by_name: string | null
+          status: string
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          closed_at?: string
+          closed_by?: string | null
+          closed_by_name?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          reopened_by_name?: string | null
+          status?: string
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          closed_at?: string
+          closed_by?: string | null
+          closed_by_name?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          reopened_by_name?: string | null
+          status?: string
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      time_entry_revisions: {
+        Row: {
+          action: string
+          changed_at: string
+          changed_by: string | null
+          changed_by_name: string | null
+          changed_via: string
+          employee_id: string
+          entry_id: string
+          id: string
+          new_row: Json | null
+          old_row: Json | null
+        }
+        Insert: {
+          action: string
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          changed_via: string
+          employee_id: string
+          entry_id: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+        }
+        Update: {
+          action?: string
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          changed_via?: string
+          employee_id?: string
+          entry_id?: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+        }
+        Relationships: []
+      }
       time_entries: {
         Row: {
+          after_close: boolean
           client_punch_id: string | null
           clock_in: string | null
           clock_in_photo: string | null
@@ -193,9 +269,14 @@ export type Database = {
           manual_hours: number | null
           notes: string | null
           source: string
+          void_reason: string | null
+          voided: boolean
+          voided_at: string | null
+          voided_by: string | null
           work_date: string
         }
         Insert: {
+          after_close?: boolean
           client_punch_id?: string | null
           clock_in?: string | null
           clock_in_photo?: string | null
@@ -211,9 +292,14 @@ export type Database = {
           manual_hours?: number | null
           notes?: string | null
           source?: string
+          void_reason?: string | null
+          voided?: boolean
+          voided_at?: string | null
+          voided_by?: string | null
           work_date?: string
         }
         Update: {
+          after_close?: boolean
           client_punch_id?: string | null
           clock_in?: string | null
           clock_in_photo?: string | null
@@ -229,6 +315,10 @@ export type Database = {
           manual_hours?: number | null
           notes?: string | null
           source?: string
+          void_reason?: string | null
+          voided?: boolean
+          voided_at?: string | null
+          voided_by?: string | null
           work_date?: string
         }
         Relationships: [
@@ -332,6 +422,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      actor_name: { Args: never; Returns: string }
+      is_week_closed: { Args: { _date: string }; Returns: boolean }
       can_edit_employee: { Args: { _employee_id: string }; Returns: boolean }
       can_view_employee: { Args: { _employee_id: string }; Returns: boolean }
       has_role: {
