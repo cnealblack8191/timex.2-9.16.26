@@ -39,9 +39,9 @@ Open:
 - Employee data is sample data until the existing ECI system is connected.
 - Punch photos currently live in Supabase storage; moving them to AWS S3 is pending your go-ahead.
 
-## Logins & permissions (in progress)
-- [ ] Office sign-in required; kiosk stays open
-- [ ] Roles: Admin, Payroll (all divisions, edit only granted groups/people), View only
-- [ ] Admin → Users tab: create with temp password, set role + divisions, deactivate
-- [ ] Division scoping across Operations, Time Entries, PTO, Reports, Payroll, Admin
-- [ ] Seed admin account charles@ecinc.us
+## Logins & permissions (done)
+- [x] Office sign-in required; kiosk stays open
+- [x] Roles: Admin, Payroll (all divisions, edit only granted groups/people), View only
+- [x] Admin → Users tab: create with temp password, set role + divisions, deactivate
+- [x] Division scoping across the office pages (enforced in the database)
+- [x] Admin account charles@ecinc.us
