@@ -297,11 +297,19 @@ export function TimeCardPanel({
               <thead>
                 <tr className="border-b border-line/70 text-left text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                   <th className="px-2 py-2 font-semibold">Job</th>
-                  {days.map((dk) => (
-                    <th key={dk} className="px-1 py-2 text-center font-semibold">
-                      {formatDay(dk)}
-                    </th>
-                  ))}
+                  {days.map((dk) => {
+                    const d = parseDateKey(dk);
+                    return (
+                      <th key={dk} className="px-1 py-2 text-center font-semibold">
+                        <span className="block leading-tight">
+                          {d.toLocaleDateString([], { weekday: "short" })}
+                        </span>
+                        <span className="block leading-tight font-mono text-[10px] font-medium normal-case tracking-normal">
+                          {d.toLocaleDateString([], { month: "short", day: "numeric" })}
+                        </span>
+                      </th>
+                    );
+                  })}
                   <th className="px-2 py-2 text-right font-semibold">Total</th>
                   <th className="w-8" />
                 </tr>
