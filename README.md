@@ -74,6 +74,12 @@ This project was built with [Lovable](https://lovable.dev).
   (`app_settings.timezone`), and the database allows one open punch per employee.
 - Punch photos are served only to signed-in users allowed to see that employee,
   and purged after 30 days by `/api/cron/purge-photos` (schedule it daily).
+- Every change to a time entry is recorded in `time_entry_revisions` by a
+  trigger and shown under History. Entries are voided, never deleted; only an
+  administrator can restore one. Payroll or an administrator closes a week,
+  only an administrator reopens it, and edits inside a closed week are blocked
+  by row level security for everyone else. Late kiosk punches are recorded and
+  flagged. Details: [docs/PAYROLL_INTEGRITY_2026-09-16.md](docs/PAYROLL_INTEGRITY_2026-09-16.md).
 
 Backend secrets (Lovable Cloud): `KIOSK_DEVICE_KEY` for the mobile API,
 optional `ADJUSTMENT_TOKEN_SECRET` for supervisor tokens (falls back to the

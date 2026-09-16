@@ -100,6 +100,15 @@ Rules for the mobile client:
 - Punches for an inactive employee or a closed job are rejected (`ok: false`,
   no `retry`) with a message to show the worker.
 
+### Closed payroll weeks
+
+Once the office closes a payroll week, a punch or clock-out that lands in it
+is **still accepted and recorded** (a queued offline punch must never be lost)
+but the database marks it `after_close`, and the office sees it flagged on
+Operations and Payroll. Nothing changes for the device. The supervisor
+Adjustments screen, however, refuses to change a closed week with the message
+"The office has closed that payroll week."
+
 ### Work dates
 
 The server computes `work_date` from `at` in the company timezone stored in

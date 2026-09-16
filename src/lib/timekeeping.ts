@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 export type Division = { id: string; name: string; code: string };
 
@@ -36,6 +37,40 @@ export type TimeEntry = {
   created_at: string;
   clock_in_photo?: string | null;
   clock_out_photo?: string | null;
+  /** Voided entries stay on record but count for nothing. Only an admin can restore one. */
+  voided: boolean;
+  voided_at: string | null;
+  voided_by: string | null;
+  void_reason: string | null;
+  /** Set by the database when a kiosk punch lands in a week the office had already closed. */
+  after_close: boolean;
+};
+
+/** A payroll week the office has closed (or closed and reopened). Keyed by its Sunday. */
+export type PayPeriod = {
+  week_start: string;
+  status: string;
+  closed_at: string;
+  closed_by: string | null;
+  closed_by_name: string | null;
+  reopened_at: string | null;
+  reopened_by: string | null;
+  reopened_by_name: string | null;
+  updated_at: string;
+};
+
+/** One recorded change to a time entry, written by a database trigger. */
+export type TimeEntryRevision = {
+  id: string;
+  entry_id: string;
+  employee_id: string;
+  action: string;
+  changed_at: string;
+  changed_by: string | null;
+  changed_by_name: string | null;
+  changed_via: string;
+  old_row: Record<string, unknown> | null;
+  new_row: Record<string, unknown> | null;
 };
 
 export const fullName = (e: Pick<Employee, "first_name" | "last_name">) =>
@@ -191,18 +226,29 @@ export function fetchAllEmployees() {
   );
 }
 
-export function fetchEntriesBetween(from: string, to: string) {
-  return pageAll<TimeEntry>((start, end) =>
-    supabase
+/**
+ * Entries in a date range. Voided entries are left out unless asked for, so
+ * payroll, reports and the time card never count them; Time Entries asks for
+ * them to show the greyed-out record.
+ */
+export function fetchEntriesBetween(
+  from: string,
+  to: string,
+  options: { includeVoided?: boolean } = {},
+) {
+  return pageAll<TimeEntry>((start, end) => {
+    let query = supabase
       .from("time_entries")
       .select("*")
       .gte("work_date", from)
-      .lte("work_date", to)
+      .lte("work_date", to);
+    if (!options.includeVoided) query = query.eq("voided", false);
+    return query
       .order("work_date", { ascending: false })
       .order("clock_in", { ascending: true })
       .order("id")
-      .range(start, end),
-  );
+      .range(start, end);
+  });
 }
 
 export function fetchOpenEntries() {
@@ -212,8 +258,43 @@ export function fetchOpenEntries() {
       .select("*")
       .is("clock_out", null)
       .eq("entry_type", "work")
+      .eq("voided", false)
       .order("clock_in", { ascending: true })
       .order("id")
       .range(from, to),
   );
+}
+
+export function fetchPayPeriods() {
+  return pageAll<PayPeriod>((from, to) =>
+    supabase
+      .from("pay_periods")
+      .select("*")
+      .order("week_start", { ascending: false })
+      .range(from, to),
+  );
+}
+
+type RevisionRow = Database["public"]["Tables"]["time_entry_revisions"]["Row"];
+
+const asRecord = (value: Json | null): Record<string, unknown> | null =>
+  value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+export async function fetchRevisions(entryId: string): Promise<TimeEntryRevision[]> {
+  const rows = await pageAll<RevisionRow>((from, to) =>
+    supabase
+      .from("time_entry_revisions")
+      .select("*")
+      .eq("entry_id", entryId)
+      .order("changed_at", { ascending: false })
+      .order("id")
+      .range(from, to),
+  );
+  return rows.map((row) => ({
+    ...row,
+    old_row: asRecord(row.old_row),
+    new_row: asRecord(row.new_row),
+  }));
 }

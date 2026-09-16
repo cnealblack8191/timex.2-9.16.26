@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Panel, PortalShell } from "@/components/PortalShell";
-import { useDivisions, useEmployees, useWeekEntries } from "@/hooks/use-timekeeping";
+import { useDivisions, useEmployees, usePayPeriods, useWeekEntries } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccess } from "@/hooks/use-access";
 import { entryHours, formatDay, fullName, toDateKey } from "@/lib/timekeeping";
@@ -11,9 +11,15 @@ export const Route = createFileRoute("/_authenticated/pto")({
   head: () => ({
     meta: [
       { title: "TimeX" },
-      { name: "description", content: "Enter PTO and holiday pay for one employee or a whole crew." },
+      {
+        name: "description",
+        content: "Enter PTO and holiday pay for one employee or a whole crew.",
+      },
       { property: "og:title", content: "PTO & Holiday — TimeX" },
-      { property: "og:description", content: "Enter PTO and holiday pay for one employee or a whole crew." },
+      {
+        property: "og:description",
+        content: "Enter PTO and holiday pay for one employee or a whole crew.",
+      },
     ],
   }),
   component: PtoPage,
@@ -25,6 +31,7 @@ function PtoPage() {
   const { data: employees = [] } = useEmployees();
   const { data: divisions = [] } = useDivisions();
   const { data: weekEntries = [] } = useWeekEntries(new Date());
+  const payPeriods = usePayPeriods();
 
   const [type, setType] = useState<"pto" | "holiday">("pto");
   const [date, setDate] = useState(toDateKey(new Date()));
@@ -46,20 +53,33 @@ function PtoPage() {
     return true;
   });
 
-  const recent = weekEntries.filter(
-    (e) => e.entry_type === "pto" || e.entry_type === "holiday",
-  );
+  const recent = weekEntries.filter((e) => e.entry_type === "pto" || e.entry_type === "holiday");
+
+  const closedPeriod = payPeriods.closedFor(date);
+  const blockedByClose = Boolean(closedPeriod) && !access.isAdmin;
 
   async function submit() {
     if (selected.length === 0 || !date) return;
+    if (blockedByClose) {
+      setNote(
+        "That week is closed. Ask an administrator to reopen it or enter the time on an open week.",
+      );
+      return;
+    }
+    const value = Number(hours);
+    if (!Number.isFinite(value) || value <= 0 || value > 24) {
+      setNote("Enter hours between 0 and 24.");
+      return;
+    }
     setSaving(true);
     const rows = selected.map((employee_id) => ({
       employee_id,
       job_id: null,
       work_date: date,
       entry_type: type,
-      manual_hours: Number(hours) || 0,
+      manual_hours: value,
       notes: notes || null,
+      source: "portal-pto",
     }));
     const { error } = await supabase.from("time_entries").insert(rows);
     setSaving(false);
@@ -152,7 +172,9 @@ function PtoPage() {
                   key={t}
                   onClick={() => setType(t)}
                   className={`rounded-lg py-2.5 text-[13px] font-semibold ${
-                    type === t ? "bg-ink text-primary-foreground" : "bg-card/80 text-steel ring-1 ring-ink/5"
+                    type === t
+                      ? "bg-ink text-primary-foreground"
+                      : "bg-card/80 text-steel ring-1 ring-ink/5"
                   }`}
                 >
                   {t === "pto" ? "PTO" : "Holiday pay"}
@@ -161,7 +183,9 @@ function PtoPage() {
             </div>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <label className="rounded-lg bg-card/80 px-3 py-2.5 ring-1 ring-ink/5">
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Date</span>
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Date
+                </span>
                 <input
                   type="date"
                   value={date}
@@ -170,7 +194,9 @@ function PtoPage() {
                 />
               </label>
               <label className="rounded-lg bg-card/80 px-3 py-2.5 ring-1 ring-ink/5">
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Hours</span>
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Hours
+                </span>
                 <input
                   type="number"
                   step="0.5"
@@ -181,7 +207,9 @@ function PtoPage() {
               </label>
             </div>
             <label className="mt-3 block rounded-lg bg-card/80 px-3 py-2.5 ring-1 ring-ink/5">
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Notes</span>
+              <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                Notes
+              </span>
               <input
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -189,12 +217,21 @@ function PtoPage() {
                 className="w-full bg-transparent text-[13px]"
               />
             </label>
+            {closedPeriod && (
+              <div className="mt-3 rounded-lg bg-ink/[0.04] px-3 py-2 text-[12px] text-steel ring-1 ring-ink/10">
+                The week of {formatDay(closedPeriod.week_start)} is closed
+                {closedPeriod.closed_by_name ? ` (by ${closedPeriod.closed_by_name})` : ""}.
+                {access.isAdmin
+                  ? " As an administrator you can still add time to it."
+                  : " Only an administrator can add time to a closed week."}
+              </div>
+            )}
             <div className="mt-3 text-[12px] text-muted-foreground">
               {note || `${selected.length} employees selected`}
             </div>
             <button
               onClick={submit}
-              disabled={saving || selected.length === 0}
+              disabled={saving || selected.length === 0 || blockedByClose}
               className="skew-btn mt-3 w-full rounded-xl bg-amber py-3.5 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
             >
               <span>

@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronDown, FileSpreadsheet, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import logoAsset from "@/assets/eci-logo.png.asset.json";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDivisions, useEmployees, useJobs, useRangeEntries } from "@/hooks/use-timekeeping";
+import { useAccess } from "@/hooks/use-access";
+import {
+  useDivisions,
+  useEmployees,
+  useJobs,
+  usePayPeriods,
+  useRangeEntries,
+} from "@/hooks/use-timekeeping";
+import { supabase } from "@/integrations/supabase/client";
 import { exportEmployeeReportsPdf } from "@/lib/employee-report-pdf";
+import { isStalePunch } from "@/lib/time-rules";
 import {
   OVERTIME_THRESHOLD,
   entryHours,
+  formatDay,
   fullName,
   jobLabel,
   parseDateKey,
@@ -40,18 +51,28 @@ async function imageToBase64(url: string): Promise<string> {
 export const Route = createFileRoute("/_authenticated/payroll")({
   head: () => ({
     meta: [
-      { title: "TimeX" },
-      { name: "description", content: "Weekly hours review with overtime flags and payroll export." },
+      { title: "Payroll — TimeX" },
+      {
+        name: "description",
+        content: "Weekly hours review with overtime flags and payroll export.",
+      },
       { property: "og:title", content: "Payroll — TimeX" },
-      { property: "og:description", content: "Weekly hours review with overtime flags and payroll export." },
+      {
+        property: "og:description",
+        content: "Weekly hours review with overtime flags and payroll export.",
+      },
     ],
   }),
   component: PayrollPage,
 });
 
 function PayrollPage() {
+  const { access } = useAccess();
+  const queryClient = useQueryClient();
   const [anchorKey, setAnchorKey] = useState(toDateKey(new Date()));
   const anchor = useMemo(() => parseDateKey(anchorKey), [anchorKey]);
+  const [periodBusy, setPeriodBusy] = useState(false);
+  const [periodMessage, setPeriodMessage] = useState<string | null>(null);
 
   const from = toDateKey(weekStart(anchor));
   const to = toDateKey(weekEnd(anchor));
@@ -61,9 +82,14 @@ function PayrollPage() {
   const { data: employees = [] } = useEmployees();
   const { data: jobs = [] } = useJobs();
   const { data: divisions = [] } = useDivisions();
+  const payPeriods = usePayPeriods();
+  const period = payPeriods.periodFor(from);
+  const closed = period?.status === "closed";
+  const canClose = access.isAdmin || access.isPayroll;
 
   const jobById = useMemo(() => new Map(jobs.map((j) => [j.id, j])), [jobs]);
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
+  const employeeById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
 
   const rows = useMemo(() => {
     return employees
@@ -104,12 +130,79 @@ function PayrollPage() {
     0,
   );
 
+  // Punches that will be paid wrong unless someone acts: still open, or landed after close.
+  const stale = useMemo(() => entries.filter((e) => isStalePunch(e)), [entries]);
+  const afterClose = useMemo(() => entries.filter((e) => e.after_close), [entries]);
+  const nameOf = (employeeId: string) => {
+    const emp = employeeById.get(employeeId);
+    return emp ? fullName(emp) : "Unknown";
+  };
+
+  const statusLine = closed
+    ? `Week closed ${new Date(period!.closed_at).toLocaleString()}${
+        period!.closed_by_name ? ` by ${period!.closed_by_name}` : ""
+      }`
+    : "Week open";
+
+  async function closeWeek() {
+    if (!canClose) return;
+    const warnings = [
+      stale.length
+        ? `${stale.length} punch${stale.length === 1 ? "" : "es"} still need a clock-out`
+        : null,
+    ].filter(Boolean);
+    const confirmed = window.confirm(
+      `Close the payroll week of ${formatDay(from)} through ${formatDay(to)}?\n\n` +
+        `Time in this week can then only be changed by an administrator. Late kiosk punches are still recorded and flagged.` +
+        (warnings.length ? `\n\nHeads up: ${warnings.join("; ")}.` : ""),
+    );
+    if (!confirmed) return;
+    setPeriodBusy(true);
+    setPeriodMessage(null);
+    const { error } = period
+      ? await supabase.from("pay_periods").update({ status: "closed" }).eq("week_start", from)
+      : await supabase.from("pay_periods").insert({ week_start: from });
+    setPeriodBusy(false);
+    if (error) {
+      setPeriodMessage(error.message);
+      return;
+    }
+    setPeriodMessage("Week closed.");
+    queryClient.invalidateQueries({ queryKey: ["pay-periods"] });
+  }
+
+  async function reopenWeek() {
+    if (!access.isAdmin) return;
+    if (
+      !window.confirm(
+        `Reopen the week of ${formatDay(from)}? Payroll users will be able to edit it again.`,
+      )
+    ) {
+      return;
+    }
+    setPeriodBusy(true);
+    setPeriodMessage(null);
+    const { error } = await supabase
+      .from("pay_periods")
+      .update({ status: "open" })
+      .eq("week_start", from);
+    setPeriodBusy(false);
+    if (error) {
+      setPeriodMessage(error.message);
+      return;
+    }
+    setPeriodMessage("Week reopened.");
+    queryClient.invalidateQueries({ queryKey: ["pay-periods"] });
+  }
+
   function exportCsv() {
     const header = [
       "Employee",
       "Group",
       "Assigned Job",
-      ...days.map((d) => d.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
+      ...days.map((d) =>
+        d.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" }),
+      ),
       "PTO Hours",
       "Holiday Hours",
       "Total Hours",
@@ -130,7 +223,11 @@ function PayrollPage() {
         ot.toFixed(2),
       ];
     });
-    const csv = [header, ...lines]
+    const csv = [
+      [`Payroll week ${from} to ${to}`, statusLine, `Exported ${new Date().toLocaleString()}`],
+      header,
+      ...lines,
+    ]
       .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
       .join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
@@ -160,26 +257,30 @@ function PayrollPage() {
     doc.text("TimeX Payroll Breakdown", 36, 118);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(`Payroll week: ${from} through ${to} (Sunday-Saturday)`, 36, 135);
+    doc.text(`Payroll week: ${from} through ${to} (Sunday-Saturday)    ${statusLine}`, 36, 135);
     doc.text(
-      `Employees: ${rows.length}    Total hours: ${grand.toFixed(2)}    Overtime hours: ${overtimeHours.toFixed(2)}`,
+      `Employees: ${rows.length}    Total hours: ${grand.toFixed(2)}    Overtime hours: ${overtimeHours.toFixed(2)}    Exported ${new Date().toLocaleString()}`,
       36,
       149,
     );
 
     autoTable(doc, {
       startY: 163,
-      head: [[
-        "Employee",
-        "Group",
-        "Assigned Job",
-        ...days.map((day) => day.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" })),
-        "PTO",
-        "Holiday",
-        "Regular",
-        "OT",
-        "Total",
-      ]],
+      head: [
+        [
+          "Employee",
+          "Group",
+          "Assigned Job",
+          ...days.map((day) =>
+            day.toLocaleDateString([], { weekday: "short", month: "numeric", day: "numeric" }),
+          ),
+          "PTO",
+          "Holiday",
+          "Regular",
+          "OT",
+          "Total",
+        ],
+      ],
       body: rows.map((row) => {
         const overtime = Math.max(0, row.workTotal - OVERTIME_THRESHOLD);
         return [
@@ -194,19 +295,23 @@ function PayrollPage() {
           row.total.toFixed(2),
         ];
       }),
-      foot: [[
-        "TOTAL",
-        "",
-        "",
-        ...days.map((_, index) =>
-          rows.reduce((sum, row) => sum + (row.perDay[index] ?? 0), 0).toFixed(2),
-        ),
-        rows.reduce((sum, row) => sum + row.ptoHours, 0).toFixed(2),
-        rows.reduce((sum, row) => sum + row.holidayHours, 0).toFixed(2),
-        rows.reduce((sum, row) => sum + Math.min(row.workTotal, OVERTIME_THRESHOLD), 0).toFixed(2),
-        overtimeHours.toFixed(2),
-        grand.toFixed(2),
-      ]],
+      foot: [
+        [
+          "TOTAL",
+          "",
+          "",
+          ...days.map((_, index) =>
+            rows.reduce((sum, row) => sum + (row.perDay[index] ?? 0), 0).toFixed(2),
+          ),
+          rows.reduce((sum, row) => sum + row.ptoHours, 0).toFixed(2),
+          rows.reduce((sum, row) => sum + row.holidayHours, 0).toFixed(2),
+          rows
+            .reduce((sum, row) => sum + Math.min(row.workTotal, OVERTIME_THRESHOLD), 0)
+            .toFixed(2),
+          overtimeHours.toFixed(2),
+          grand.toFixed(2),
+        ],
+      ],
       showFoot: "lastPage",
       theme: "grid",
       styles: { font: "helvetica", fontSize: 7, cellPadding: 3, textColor: [28, 35, 43] },
@@ -257,6 +362,30 @@ function PayrollPage() {
           <span className="rounded-lg bg-ink px-3 py-2 font-mono text-primary-foreground">
             Week {weekNumber(anchor)}
           </span>
+          {closed ? (
+            <span className="rounded-lg bg-emerald/10 px-3 py-2 font-semibold text-emerald ring-1 ring-emerald/30">
+              Closed
+            </span>
+          ) : canClose ? (
+            <Button
+              variant="outline"
+              disabled={periodBusy}
+              onClick={() => void closeWeek()}
+              className="text-[13px]"
+            >
+              Close week
+            </Button>
+          ) : null}
+          {closed && access.isAdmin && (
+            <Button
+              variant="outline"
+              disabled={periodBusy}
+              onClick={() => void reopenWeek()}
+              className="text-[13px]"
+            >
+              Reopen
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="bg-amber font-display text-[14px] text-ink hover:bg-amber-deep">
@@ -288,6 +417,65 @@ function PayrollPage() {
           className="h-20 w-auto object-contain"
         />
       </div>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-[12.5px]">
+        <span
+          className={`rounded-lg px-3 py-1.5 font-semibold ring-1 ${
+            closed
+              ? "bg-emerald/10 text-emerald ring-emerald/30"
+              : "bg-card/70 text-steel ring-ink/5"
+          }`}
+        >
+          {statusLine}
+        </span>
+        {period?.status === "open" && period.reopened_at && (
+          <span className="text-muted-foreground">
+            reopened {new Date(period.reopened_at).toLocaleString()}
+            {period.reopened_by_name ? ` by ${period.reopened_by_name}` : ""}
+          </span>
+        )}
+        {periodMessage && <span className="text-steel">{periodMessage}</span>}
+      </div>
+
+      {(stale.length > 0 || afterClose.length > 0) && (
+        <div className="mb-3 grid gap-3 lg:grid-cols-2">
+          {stale.length > 0 && (
+            <div className="rounded-xl bg-amber/10 px-4 py-3 text-[13px] ring-1 ring-amber/30">
+              <div className="font-semibold text-amber-deep">
+                {stale.length} punch{stale.length === 1 ? "" : "es"} still need a clock-out
+              </div>
+              <p className="mt-1 text-steel">
+                These count as zero hours until the time is set:{" "}
+                {stale
+                  .slice(0, 6)
+                  .map((e) => `${nameOf(e.employee_id)} (${formatDay(e.work_date)})`)
+                  .join(", ")}
+                {stale.length > 6 ? ` and ${stale.length - 6} more` : ""}.{" "}
+                <Link to="/time-entries" className="font-semibold underline decoration-dotted">
+                  Fix in Time Entries
+                </Link>
+              </p>
+            </div>
+          )}
+          {afterClose.length > 0 && (
+            <div className="rounded-xl bg-rose/10 px-4 py-3 text-[13px] ring-1 ring-rose/30">
+              <div className="font-semibold text-rose">
+                {afterClose.length} punch{afterClose.length === 1 ? "" : "es"} arrived after this
+                week was closed
+              </div>
+              <p className="mt-1 text-steel">
+                Recorded from a kiosk after close, so they are not in the export you already ran:{" "}
+                {afterClose
+                  .slice(0, 6)
+                  .map((e) => `${nameOf(e.employee_id)} (${formatDay(e.work_date)})`)
+                  .join(", ")}
+                {afterClose.length > 6 ? ` and ${afterClose.length - 6} more` : ""}. Decide on a
+                correction run or an adjustment on the next week.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mb-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
         {[
@@ -335,10 +523,18 @@ function PayrollPage() {
             <tbody>
               {rows.map((r) => {
                 const ot = r.workTotal > OVERTIME_THRESHOLD;
+                const needsClockOut = stale.some((e) => e.employee_id === r.emp.id);
                 return (
                   <tr key={r.emp.id} className="border-b border-line/60 hover:bg-ink/[0.02]">
                     <td className="px-4 py-2.5">
-                      <div className="font-semibold">{fullName(r.emp)}</div>
+                      <div className="font-semibold">
+                        {fullName(r.emp)}
+                        {needsClockOut && (
+                          <span className="ml-2 rounded bg-amber/15 px-1.5 py-0.5 text-[10px] font-bold uppercase text-amber-deep">
+                            Needs clock-out
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[11px] text-muted-foreground">
                         {divisionById.get(r.emp.division_id ?? "")?.name ?? "—"}
                       </div>
@@ -368,7 +564,10 @@ function PayrollPage() {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={days.length + 4} className="px-4 py-10 text-center text-muted-foreground">
+                  <td
+                    colSpan={days.length + 4}
+                    className="px-4 py-10 text-center text-muted-foreground"
+                  >
                     No hours recorded for this week.
                   </td>
                 </tr>

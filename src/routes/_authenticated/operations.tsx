@@ -10,8 +10,11 @@ import {
   useWeekEntries,
 } from "@/hooks/use-timekeeping";
 import { supabase } from "@/integrations/supabase/client";
+import { useAccess } from "@/hooks/use-access";
+import { STALE_PUNCH_HOURS, isStalePunch } from "@/lib/time-rules";
 import {
   entryHours,
+  formatDay,
   formatTime,
   fullName,
   jobLabel,
@@ -20,16 +23,18 @@ import {
 
 export const Route = createFileRoute("/_authenticated/operations")({
   head: () => ({
-      meta: [
+    meta: [
       { title: "TimeX" },
       {
         name: "description",
-        content: "Live crew status, time entries and job assignments for Electrical Contractor Inc.",
+        content:
+          "Live crew status, time entries and job assignments for Electrical Contractor Inc.",
       },
       { property: "og:title", content: "Operations — TimeX" },
       {
         property: "og:description",
-        content: "Live crew status, time entries and job assignments for Electrical Contractor Inc.",
+        content:
+          "Live crew status, time entries and job assignments for Electrical Contractor Inc.",
       },
     ],
   }),
@@ -39,6 +44,7 @@ export const Route = createFileRoute("/_authenticated/operations")({
 function Operations() {
   const today = new Date();
   const queryClient = useQueryClient();
+  const { access } = useAccess();
   const { data: employees = [] } = useEmployees();
   const { data: jobs = [] } = useJobs();
   const { data: divisions = [] } = useDivisions();
@@ -50,15 +56,9 @@ function Operations() {
   const [saving, setSaving] = useState(false);
   const [assignNote, setAssignNote] = useState("");
 
-  const employeeById = useMemo(
-    () => new Map(employees.map((e) => [e.id, e])),
-    [employees],
-  );
+  const employeeById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
   const jobById = useMemo(() => new Map(jobs.map((j) => [j.id, j])), [jobs]);
-  const divisionById = useMemo(
-    () => new Map(divisions.map((d) => [d.id, d])),
-    [divisions],
-  );
+  const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
 
   const divisionCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -74,7 +74,17 @@ function Operations() {
   );
 
   const recent = weekEntries.slice(0, 8);
-  const totalHours = weekEntries.reduce((sum, e) => sum + entryHours(e), 0);
+  const totalHours = weekEntries
+    .filter((e) => e.entry_type === "work")
+    .reduce((sum, e) => sum + entryHours(e), 0);
+
+  // Forgotten clock-outs first, then everyone else in punch order.
+  const stale = useMemo(() => open.filter((e) => isStalePunch(e)), [open]);
+  const openSorted = useMemo(
+    () => [...open.filter((e) => isStalePunch(e)), ...open.filter((e) => !isStalePunch(e))],
+    [open],
+  );
+  const afterCloseCount = weekEntries.filter((e) => e.after_close).length;
 
   async function bulkAssign() {
     if (!bulkJob || selectedDivisions.length === 0) return;
@@ -100,8 +110,24 @@ function Operations() {
       actions={
         <>
           <span className="rounded-lg bg-emerald/10 px-3 py-2 text-emerald ring-1 ring-emerald/20">
-            ● {open.length} on site
+            ● {open.length - stale.length} on site
           </span>
+          {stale.length > 0 && (
+            <Link
+              to="/time-entries"
+              className="rounded-lg bg-amber/15 px-3 py-2 font-semibold text-amber-deep ring-1 ring-amber/30"
+            >
+              {stale.length} need clock-out
+            </Link>
+          )}
+          {afterCloseCount > 0 && (
+            <Link
+              to="/payroll"
+              className="rounded-lg bg-rose/10 px-3 py-2 font-semibold text-rose ring-1 ring-rose/30"
+            >
+              {afterCloseCount} after close
+            </Link>
+          )}
           <span className="rounded-lg bg-ink px-3 py-2 font-mono text-primary-foreground">
             Week {weekNumber(today)}
           </span>
@@ -120,20 +146,34 @@ function Operations() {
               </span>
             </div>
             <ul className="space-y-2">
-              {open.slice(0, 8).map((entry) => {
+              {openSorted.slice(0, 8).map((entry) => {
                 const emp = employeeById.get(entry.employee_id);
+                const needsClockOut = isStalePunch(entry);
                 return (
                   <li
                     key={entry.id}
-                    className="flex items-center gap-2.5 rounded-lg bg-card/70 px-3 py-2.5"
+                    className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 ${
+                      needsClockOut ? "bg-amber/10 ring-1 ring-amber/30" : "bg-card/70"
+                    }`}
+                    title={
+                      needsClockOut
+                        ? `Open for more than ${STALE_PUNCH_HOURS} hours — set the clock-out in Time Entries`
+                        : undefined
+                    }
                   >
-                    <span className="h-2 w-2 animate-blip rounded-full bg-emerald" />
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        needsClockOut ? "bg-amber" : "animate-blip bg-emerald"
+                      }`}
+                    />
                     <div className="flex-1 leading-tight">
                       <div className="text-[13px] font-semibold">
                         {emp ? fullName(emp) : "Unknown"}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        {jobLabel(jobById.get(entry.job_id ?? ""))}
+                        {needsClockOut
+                          ? `Needs clock-out · since ${formatDay(entry.work_date)}`
+                          : jobLabel(jobById.get(entry.job_id ?? ""))}
                       </div>
                     </div>
                     <span className="font-mono text-[11px] text-steel">
@@ -161,7 +201,7 @@ function Operations() {
             </div>
             <div className="mt-2 font-mono text-3xl">{totalHours.toFixed(1)}</div>
             <div className="mt-1 text-[12px] text-primary-foreground/60">
-              hours logged Sunday–Saturday
+              hours worked Sunday–Saturday
             </div>
           </div>
         </div>
@@ -227,73 +267,73 @@ function Operations() {
           </div>
         </Panel>
 
-        <Panel className="col-span-12 flex flex-col p-4 lg:col-span-3">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-steel">
-              Bulk Assign
-            </span>
-            <span className="font-mono text-[11px] text-muted-foreground">By group</span>
-          </div>
-          <div className="mb-4 space-y-2">
-            {divisions.map((d) => {
-              const checked = selectedDivisions.includes(d.id);
-              return (
-                <button
-                  key={d.id}
-                  onClick={() =>
-                    setSelectedDivisions((prev) =>
-                      checked ? prev.filter((id) => id !== d.id) : [...prev, d.id],
-                    )
-                  }
-                  className="flex w-full items-center gap-2.5 rounded-lg bg-card/80 px-3 py-2 text-[13px]"
-                >
-                  <span
-                    className={`grid h-4 w-4 place-items-center rounded-[5px] text-[10px] font-bold ${
-                      checked ? "bg-amber text-ink" : "ring-1 ring-line"
-                    }`}
+        {access.isAdmin && (
+          <Panel className="col-span-12 flex flex-col p-4 lg:col-span-3">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-steel">
+                Bulk Assign
+              </span>
+              <span className="font-mono text-[11px] text-muted-foreground">By group</span>
+            </div>
+            <div className="mb-4 space-y-2">
+              {divisions.map((d) => {
+                const checked = selectedDivisions.includes(d.id);
+                return (
+                  <button
+                    key={d.id}
+                    onClick={() =>
+                      setSelectedDivisions((prev) =>
+                        checked ? prev.filter((id) => id !== d.id) : [...prev, d.id],
+                      )
+                    }
+                    className="flex w-full items-center gap-2.5 rounded-lg bg-card/80 px-3 py-2 text-[13px]"
                   >
-                    {checked ? "✓" : ""}
-                  </span>
-                  {d.name}
-                  <span className="ml-auto text-[11px] text-muted-foreground">
-                    {divisionCounts.get(d.id) ?? 0}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <label className="mb-3 block rounded-lg bg-ink/5 px-3 py-2.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-steel">
-              Assign to job
-            </span>
-            <select
-              value={bulkJob}
-              onChange={(e) => setBulkJob(e.target.value)}
-              className="mt-1 w-full bg-transparent text-[13px] font-semibold"
+                    <span
+                      className={`grid h-4 w-4 place-items-center rounded-[5px] text-[10px] font-bold ${
+                        checked ? "bg-amber text-ink" : "ring-1 ring-line"
+                      }`}
+                    >
+                      {checked ? "✓" : ""}
+                    </span>
+                    {d.name}
+                    <span className="ml-auto text-[11px] text-muted-foreground">
+                      {divisionCounts.get(d.id) ?? 0}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <label className="mb-3 block rounded-lg bg-ink/5 px-3 py-2.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-steel">
+                Assign to job
+              </span>
+              <select
+                value={bulkJob}
+                onChange={(e) => setBulkJob(e.target.value)}
+                className="mt-1 w-full bg-transparent text-[13px] font-semibold"
+              >
+                <option value="">Choose a job</option>
+                {jobs.map((j) => (
+                  <option key={j.id} value={j.id}>
+                    {jobLabel(j)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="mb-4 text-[12px] text-muted-foreground">
+              {assignNote ||
+                `${selectedCount} employees selected across ${selectedDivisions.length} groups`}
+            </div>
+            <button
+              onClick={bulkAssign}
+              disabled={saving || !bulkJob || selectedCount === 0}
+              className="skew-btn mt-auto w-full rounded-xl bg-amber py-3.5 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
             >
-              <option value="">Choose a job</option>
-              {jobs.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {jobLabel(j)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="mb-4 text-[12px] text-muted-foreground">
-            {assignNote ||
-              `${selectedCount} employees selected across ${selectedDivisions.length} groups`}
-          </div>
-          <button
-            onClick={bulkAssign}
-            disabled={saving || !bulkJob || selectedCount === 0}
-            className="skew-btn mt-auto w-full rounded-xl bg-amber py-3.5 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
-          >
-            <span>{saving ? "Assigning…" : `Assign ${selectedCount} to Job`}</span>
-          </button>
-        </Panel>
-
+              <span>{saving ? "Assigning…" : `Assign ${selectedCount} to Job`}</span>
+            </button>
+          </Panel>
+        )}
       </div>
     </PortalShell>
   );
 }
-

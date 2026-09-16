@@ -8,6 +8,7 @@
 import type { KioskBootstrap, KioskPunchInput, KioskPunchResult } from "./kiosk-types";
 import type { TimeEntry } from "./timekeeping";
 import { safeEqual } from "./kiosk-auth.server";
+import { weekStartKey } from "./time-rules";
 import { DEFAULT_TIMEZONE, dateKeyInZone, isValidTimeZone } from "./tz";
 
 type PunchBody = KioskPunchInput & { source: string };
@@ -91,6 +92,7 @@ export async function kioskBootstrap(): Promise<KioskBootstrap> {
       .from("time_entries")
       .select("id,employee_id,job_id,clock_in,work_date")
       .eq("entry_type", "work")
+      .eq("voided", false)
       .is("clock_out", null),
     companyTimezone(),
   ]);
@@ -114,6 +116,7 @@ export async function kioskStatus(employeeId: string) {
     .select("id,job_id,clock_in,work_date")
     .eq("employee_id", employeeId)
     .eq("entry_type", "work")
+    .eq("voided", false)
     .is("clock_out", null)
     .order("clock_in", { ascending: false })
     .limit(1);
@@ -175,6 +178,7 @@ export async function applyKioskPunch(punch: PunchBody): Promise<KioskPunchResul
     .select("id")
     .eq("employee_id", punch.employee_id)
     .eq("entry_type", "work")
+    .eq("voided", false)
     .is("clock_out", null)
     .order("clock_in", { ascending: false })
     .limit(1);
@@ -424,9 +428,22 @@ export async function listAdjustmentEntries(
     .select("*")
     .eq("employee_id", employeeId)
     .eq("work_date", date)
+    .eq("voided", false)
     .order("clock_in", { ascending: true });
   if (error) throw error;
   return (data ?? []) as TimeEntry[];
+}
+
+/** True when the office has closed the payroll week that contains the date. */
+async function isWeekClosed(dateKey: string): Promise<boolean> {
+  const db = await admin();
+  const { data, error } = await db
+    .from("pay_periods")
+    .select("status")
+    .eq("week_start", weekStartKey(dateKey))
+    .maybeSingle();
+  if (error) throw error;
+  return data?.status === "closed";
 }
 
 export type AdjustmentInput = {
@@ -492,20 +509,27 @@ export async function saveAdjustment(input: AdjustmentInput): Promise<Adjustment
     ok: false,
     message: "This employee already has an open punch. Close that one first.",
   };
+  const weekClosed = {
+    ok: false,
+    message: "The office has closed that payroll week. Ask them to make the correction.",
+  };
+
+  if (await isWeekClosed(workDate)) return weekClosed;
 
   if (input.entry_id) {
     const { data: existing, error: existingError } = await db
       .from("time_entries")
-      .select("id,employee_id,entry_type,notes")
+      .select("id,employee_id,entry_type,notes,work_date,voided")
       .eq("id", input.entry_id)
       .maybeSingle();
     if (existingError) throw existingError;
-    if (!existing || existing.employee_id !== input.employee_id) {
+    if (!existing || existing.employee_id !== input.employee_id || existing.voided) {
       return { ok: false, message: "That time entry no longer exists." };
     }
     if (existing.entry_type !== "work") {
       return { ok: false, message: "Only work punches can be adjusted here." };
     }
+    if (await isWeekClosed(existing.work_date)) return weekClosed;
     const { error } = await db
       .from("time_entries")
       .update({
