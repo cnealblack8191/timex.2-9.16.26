@@ -56,7 +56,7 @@ import {
   weekStart,
 } from "@/lib/timekeeping";
 
-export const Route = createFileRoute("/reports")({
+export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({
     meta: [
       { title: "TimeX" },

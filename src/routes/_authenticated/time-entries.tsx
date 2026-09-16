@@ -30,7 +30,7 @@ import {
   type TimeEntry,
 } from "@/lib/timekeeping";
 
-export const Route = createFileRoute("/time-entries")({
+export const Route = createFileRoute("/_authenticated/time-entries")({
   head: () => ({
     meta: [
       { title: "TimeX" },

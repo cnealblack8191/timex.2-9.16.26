@@ -6,7 +6,7 @@ import { useDivisions, useEmployees, useWeekEntries } from "@/hooks/use-timekeep
 import { supabase } from "@/integrations/supabase/client";
 import { entryHours, formatDay, fullName, toDateKey } from "@/lib/timekeeping";
 
-export const Route = createFileRoute("/pto")({
+export const Route = createFileRoute("/_authenticated/pto")({
   head: () => ({
     meta: [
       { title: "TimeX" },

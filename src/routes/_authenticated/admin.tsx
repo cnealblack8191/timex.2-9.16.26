@@ -8,7 +8,7 @@ import { useDivisions, useJobs, useAllEmployees } from "@/hooks/use-timekeeping"
 import { supabase } from "@/integrations/supabase/client";
 import { fullName, jobLabel, type Division, type Employee, type Job } from "@/lib/timekeeping";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "TimeX" },
