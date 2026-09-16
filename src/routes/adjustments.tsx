@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useEmployees, useJobs, useRangeEntries } from "@/hooks/use-timekeeping";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import eciLogo from "@/assets/eci-logo.png.asset.json";
+import { adjustmentEntries, kioskBootstrap, saveAdjustment } from "@/lib/kiosk.functions";
 import { verifyKioskPin } from "@/lib/kiosk-pin.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { KIOSK_BOOTSTRAP_KEY } from "@/lib/kiosk-types";
+import { registerKioskServiceWorker } from "@/lib/pwa";
 import {
   entryHours,
   formatTime,
@@ -15,7 +16,6 @@ import {
   toLocalInput,
   type TimeEntry,
 } from "@/lib/timekeeping";
-import eciLogo from "@/assets/eci-logo.png.asset.json";
 
 export const Route = createFileRoute("/adjustments")({
   ssr: false,
@@ -24,13 +24,20 @@ export const Route = createFileRoute("/adjustments")({
       { title: "TimeX" },
       {
         name: "description",
-        content: "Protected screen for correcting employee punches on the jobsite, with a reason on every change.",
+        content:
+          "Protected screen for correcting employee punches on the jobsite, with a reason on every change.",
       },
       { property: "og:title", content: "Time Adjustments — TimeX" },
       {
         property: "og:description",
-        content: "Protected screen for correcting employee punches on the jobsite, with a reason on every change.",
+        content:
+          "Protected screen for correcting employee punches on the jobsite, with a reason on every change.",
       },
+      { name: "theme-color", content: "#1c232b" },
+    ],
+    links: [
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/kiosk-180.png" },
     ],
   }),
   component: Adjustments,
@@ -41,7 +48,14 @@ const field =
   "mt-2 w-full appearance-none rounded-xl bg-primary-foreground/10 px-4 py-4 text-[17px] font-bold text-primary-foreground ring-1 ring-primary-foreground/15 disabled:opacity-40";
 
 function Adjustments() {
-  const [unlocked, setUnlocked] = useState(false);
+  // The supervisor token lives only in memory for this screen; it expires
+  // server-side after 15 minutes, at which point the lock comes back.
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    registerKioskServiceWorker();
+  }, []);
+
   return (
     <div className="min-h-screen bg-kiosk px-4 py-5 text-primary-foreground sm:px-6">
       <div className="mx-auto w-full max-w-[560px]">
@@ -63,14 +77,17 @@ function Adjustments() {
             Back to punch
           </Link>
         </div>
-        {unlocked ? <Editor /> : <Lock onUnlock={() => setUnlocked(true)} />}
+        {token ? (
+          <Editor token={token} onLocked={() => setToken(null)} />
+        ) : (
+          <LockScreen onUnlock={setToken} />
+        )}
       </div>
     </div>
   );
 }
 
-function Lock({ onUnlock }: { onUnlock: () => void }) {
-  const verify = useServerFn(verifyKioskPin);
+function LockScreen({ onUnlock }: { onUnlock: (token: string) => void }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -80,9 +97,15 @@ function Lock({ onUnlock }: { onUnlock: () => void }) {
     setBusy(true);
     setError("");
     try {
-      const { ok } = await verify({ data: { pin } });
-      if (ok) onUnlock();
-      else setError("That code is not correct.");
+      const response = await verifyKioskPin({ data: { pin } });
+      if (response.ok) {
+        onUnlock(response.token);
+      } else if (response.locked) {
+        const minutes = Math.max(1, Math.ceil(response.retryAfterSeconds / 60));
+        setError(`Too many wrong codes. Try again in ${minutes} min.`);
+      } else {
+        setError("That code is not correct.");
+      }
     } catch {
       setError("Could not check the code — check your signal.");
     } finally {
@@ -128,36 +151,53 @@ type Draft = {
   reason: string;
 };
 
-function Editor() {
+const EMPTY_DRAFT: Draft = { clock_in: "", clock_out: "", job_id: "", reason: "" };
+
+function Editor({ token, onLocked }: { token: string; onLocked: () => void }) {
   const queryClient = useQueryClient();
-  const { data: employees = [] } = useEmployees();
-  const { data: jobs = [] } = useJobs();
+  const { data: boot } = useQuery({
+    queryKey: KIOSK_BOOTSTRAP_KEY,
+    queryFn: () => kioskBootstrap(),
+  });
+  const employees = boot?.employees ?? [];
+  const jobs = boot?.jobs ?? [];
 
   const [employeeId, setEmployeeId] = useState("");
   const [date, setDate] = useState(toDateKey(new Date()));
-  const { data: entries = [] } = useRangeEntries(date, date);
+
+  const entriesQuery = useQuery({
+    queryKey: ["adjust-entries", employeeId, date],
+    queryFn: () => adjustmentEntries({ data: { token, employee_id: employeeId, date } }),
+    enabled: employeeId !== "",
+  });
+
+  const sessionExpired = entriesQuery.data !== undefined && !entriesQuery.data.ok;
+  useEffect(() => {
+    if (sessionExpired) onLocked();
+  }, [sessionExpired, onLocked]);
+
+  const dayEntries: TimeEntry[] = useMemo(
+    () => (entriesQuery.data?.ok ? entriesQuery.data.entries : []),
+    [entriesQuery.data],
+  );
 
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<Draft>({ clock_in: "", clock_out: "", job_id: "", reason: "" });
+  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [adding, setAdding] = useState(false);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   const employee = employees.find((e) => e.id === employeeId);
-  const dayEntries = useMemo(
-    () => entries.filter((e) => e.employee_id === employeeId),
-    [entries, employeeId],
-  );
 
-  function refresh() {
-    queryClient.invalidateQueries({ queryKey: ["entries"] });
-    queryClient.invalidateQueries({ queryKey: ["open-entries"] });
+  function closeForm() {
+    setEditingId(null);
+    setAdding(false);
   }
 
   function startEdit(entry: TimeEntry) {
     setAdding(false);
     setEditingId(entry.id);
-    setStatus("");
+    setStatus(null);
     setDraft({
       clock_in: toLocalInput(entry.clock_in),
       clock_out: toLocalInput(entry.clock_out),
@@ -169,7 +209,7 @@ function Editor() {
   function startAdd() {
     setEditingId(null);
     setAdding(true);
-    setStatus("");
+    setStatus(null);
     setDraft({
       clock_in: `${date}T07:00`,
       clock_out: `${date}T15:30`,
@@ -178,55 +218,41 @@ function Editor() {
     });
   }
 
-  function noteLine(reason: string) {
-    return `Manual adjustment ${new Date().toLocaleString()}: ${reason.trim()}`;
-  }
-
   async function save() {
     if (!employeeId || !draft.reason.trim()) return;
     setBusy(true);
     try {
-      if (adding) {
-        const { error } = await supabase.from("time_entries").insert({
+      const response = await saveAdjustment({
+        data: {
+          token,
           employee_id: employeeId,
+          entry_id: adding ? null : editingId,
           job_id: draft.job_id || null,
-          work_date: date,
           clock_in: fromLocalInput(draft.clock_in),
           clock_out: fromLocalInput(draft.clock_out),
-          entry_type: "work",
-          edited: true,
-          notes: noteLine(draft.reason),
-        });
-        if (error) throw error;
-        setStatus("Missing punch added.");
-      } else if (editingId) {
-        const existing = dayEntries.find((e) => e.id === editingId);
-        const notes = [existing?.notes, noteLine(draft.reason)].filter(Boolean).join("\n");
-        const { error } = await supabase
-          .from("time_entries")
-          .update({
-            job_id: draft.job_id || null,
-            clock_in: fromLocalInput(draft.clock_in),
-            clock_out: fromLocalInput(draft.clock_out),
-            edited: true,
-            notes,
-          })
-          .eq("id", editingId);
-        if (error) throw error;
-        setStatus("Time corrected.");
+          reason: draft.reason,
+        },
+      });
+      if (response.locked) {
+        onLocked();
+        return;
       }
-      setEditingId(null);
-      setAdding(false);
-      setDraft({ clock_in: "", clock_out: "", job_id: "", reason: "" });
-      refresh();
+      setStatus({ ok: response.ok, message: response.message });
+      if (response.ok) {
+        closeForm();
+        setDraft(EMPTY_DRAFT);
+        void queryClient.invalidateQueries({ queryKey: ["adjust-entries"] });
+        void queryClient.invalidateQueries({ queryKey: KIOSK_BOOTSTRAP_KEY });
+      }
     } catch (error) {
-      setStatus((error as Error).message);
+      setStatus({ ok: false, message: (error as Error).message || "Could not save the change." });
     } finally {
       setBusy(false);
     }
   }
 
   const formOpen = adding || editingId !== null;
+  const draftJobListed = !draft.job_id || jobs.some((j) => j.id === draft.job_id);
 
   return (
     <div className="space-y-4">
@@ -237,9 +263,8 @@ function Editor() {
             value={employeeId}
             onChange={(e) => {
               setEmployeeId(e.target.value);
-              setEditingId(null);
-              setAdding(false);
-              setStatus("");
+              closeForm();
+              setStatus(null);
             }}
             className={field}
           >
@@ -258,8 +283,7 @@ function Editor() {
             value={date}
             onChange={(e) => {
               setDate(e.target.value);
-              setEditingId(null);
-              setAdding(false);
+              closeForm();
             }}
             className={field}
           />
@@ -278,7 +302,13 @@ function Editor() {
             </button>
           </div>
 
-          {dayEntries.length === 0 ? (
+          {entriesQuery.isLoading ? (
+            <p className="mt-4 text-[13px] text-primary-foreground/50">Loading…</p>
+          ) : entriesQuery.isError ? (
+            <p className="mt-4 text-[13px] text-rose">
+              Could not load this day — check your signal and try again.
+            </p>
+          ) : dayEntries.length === 0 ? (
             <p className="mt-4 text-[13px] text-primary-foreground/50">
               No time recorded for this day.
             </p>
@@ -291,19 +321,25 @@ function Editor() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-[14px] font-bold">
-                      {jobLabel(jobs.find((j) => j.id === entry.job_id))}
+                      {entry.entry_type === "work"
+                        ? jobLabel(jobs.find((j) => j.id === entry.job_id))
+                        : entry.entry_type === "pto"
+                          ? "PTO"
+                          : "Holiday"}
                     </p>
                     <p className="mt-0.5 font-mono text-[12px] text-primary-foreground/60">
                       {formatTime(entry.clock_in)} – {formatTime(entry.clock_out)} ·{" "}
                       {entryHours(entry).toFixed(2)} h{entry.edited ? " · adjusted" : ""}
                     </p>
                   </div>
-                  <button
-                    onClick={() => startEdit(entry)}
-                    className="shrink-0 rounded-lg bg-primary-foreground/10 px-3 py-2 text-[12px] font-semibold ring-1 ring-primary-foreground/15"
-                  >
-                    Adjust
-                  </button>
+                  {entry.entry_type === "work" && (
+                    <button
+                      onClick={() => startEdit(entry)}
+                      className="shrink-0 rounded-lg bg-primary-foreground/10 px-3 py-2 text-[12px] font-semibold ring-1 ring-primary-foreground/15"
+                    >
+                      Adjust
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -324,6 +360,11 @@ function Editor() {
               className={field}
             >
               <option value="">No job</option>
+              {!draftJobListed && (
+                <option value={draft.job_id} className="text-ink">
+                  Current job (closed)
+                </option>
+              )}
               {jobs.map((j) => (
                 <option key={j.id} value={j.id} className="text-ink">
                   {jobLabel(j)}
@@ -367,13 +408,10 @@ function Editor() {
               disabled={busy || !draft.reason.trim()}
               className="skew-btn rounded-xl bg-amber py-5 font-display text-xl tracking-wide text-ink disabled:opacity-30"
             >
-              <span>Save change</span>
+              <span>{busy ? "Saving…" : "Save change"}</span>
             </button>
             <button
-              onClick={() => {
-                setEditingId(null);
-                setAdding(false);
-              }}
+              onClick={closeForm}
               className="rounded-xl bg-primary-foreground/10 py-5 font-display text-xl tracking-wide ring-1 ring-primary-foreground/20"
             >
               Cancel
@@ -388,8 +426,14 @@ function Editor() {
       )}
 
       {status && (
-        <p className="rounded-xl bg-emerald/15 px-4 py-3 text-center text-[14px] font-semibold text-emerald ring-1 ring-emerald/30">
-          {status}
+        <p
+          className={`rounded-xl px-4 py-3 text-center text-[14px] font-semibold ring-1 ${
+            status.ok
+              ? "bg-emerald/15 text-emerald ring-emerald/30"
+              : "bg-rose/15 text-rose ring-rose/30"
+          }`}
+        >
+          {status.message}
         </p>
       )}
     </div>
