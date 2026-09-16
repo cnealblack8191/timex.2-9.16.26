@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useDivisions, useEmployees, useJobs, useRangeEntries } from "@/hooks/use-timekeeping";
+import { exportEmployeeReportsPdf } from "@/lib/employee-report-pdf";
 import {
   OVERTIME_THRESHOLD,
   entryHours,
@@ -227,6 +228,20 @@ function PayrollPage() {
     doc.save(`timex-payroll-${from}-to-${to}.pdf`);
   }
 
+  async function exportPerEmployeePdf() {
+    const ok = await exportEmployeeReportsPdf({
+      employees: rows.map((r) => r.emp),
+      entries,
+      jobs,
+      divisions,
+      from,
+      to,
+      fileName: `timex-payroll-by-employee-${from}-to-${to}.pdf`,
+      title: "Payroll week",
+    });
+    if (!ok) window.alert("No hours recorded for this week.");
+  }
+
   return (
     <PortalShell
       title="Payroll"
@@ -256,6 +271,10 @@ function PayrollPage() {
               <DropdownMenuItem onSelect={() => void exportPdf()}>
                 <FileText aria-hidden="true" />
                 Download PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportPerEmployeePdf()}>
+                <FileText aria-hidden="true" />
+                PDF — one per employee
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
