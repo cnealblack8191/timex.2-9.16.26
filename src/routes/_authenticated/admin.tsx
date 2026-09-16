@@ -524,7 +524,7 @@ function BulkAssignSection() {
           Bulk Assign
         </span>
         <p className="mb-4 text-[13px] text-muted-foreground">
-          Tick employees on the left, or filter to a division and select them all, then choose the
+          Tick employees on the left, or filter to a group and select them all, then choose the
           job they should be on.
         </p>
         <label className="mb-3 block rounded-lg bg-ink/5 px-3 py-2.5">
@@ -730,7 +730,7 @@ function DivisionsSection() {
             onClick={() => setEditing({ id: "", name: "", code: "" })}
             className="rounded-md bg-ink px-3 py-1.5 text-[12px] font-semibold text-primary-foreground"
           >
-            Add division
+            Add group
           </button>
         </div>
         <div className="max-h-[640px] overflow-auto">

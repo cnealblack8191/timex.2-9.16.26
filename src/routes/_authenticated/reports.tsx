@@ -290,7 +290,7 @@ function ReportsPage() {
           : "Company";
 
   const filtersSummary = [
-    divisionId === "all" ? null : `Division: ${divisions.find((d) => d.id === divisionId)?.name}`,
+    divisionId === "all" ? null : `Group: ${divisions.find((d) => d.id === divisionId)?.name}`,
     jobId === "all" ? null : `Job: ${jobLabel(jobById.get(jobId))}`,
     search.trim() ? `Search: ${search.trim()}` : null,
   ]
