@@ -40,12 +40,16 @@ export const Route = createFileRoute("/api/public/kiosk/punch")({
           try {
             results.push(
               await applyKioskPunch({
-                ...punch,
+                punch_id: punch.punch_id,
+                employee_id: punch.employee_id,
+                job_id: punch.job_id,
+                action: punch.action,
+                at: punch.at,
                 job_overridden: punch.job_overridden ?? false,
+                photo: punch.photo ?? null,
                 source: punch.source ?? "mobile",
               }),
             );
-
           } catch {
             // retryable: the device keeps this punch queued and sends it again
             results.push({

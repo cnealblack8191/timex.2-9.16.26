@@ -23,14 +23,21 @@ Everything the device caches so it can run with no signal.
 ```json
 {
   "synced_at": "2026-09-10T03:00:00.000Z",
-  "divisions": [{ "id": "uuid", "name": "Commercial", "code": "COM" }],
+  "timezone": "America/New_York",
+  "divisions": [{ "id": "uuid", "name": "Field Team", "code": "FIELD" }],
   "jobs": [{ "id": "uuid", "number": "2401", "name": "...", "location": "...", "active": true }],
-  "employees": [{ "id": "uuid", "first_name": "...", "last_name": "...", "division_id": "uuid", "assigned_job_id": "uuid" }]
+  "employees": [{ "id": "uuid", "first_name": "...", "last_name": "...", "division_id": "uuid", "assigned_job_id": "uuid" }],
+  "open_entries": [{ "id": "uuid", "employee_id": "uuid", "job_id": "uuid", "clock_in": "...", "work_date": "2026-09-10" }]
 }
 ```
 
 Call on app launch and on reconnect. Cache locally; select an employee →
 default their `assigned_job_id`, but allow choosing any job in `jobs`.
+
+`open_entries` lists everyone currently clocked in, so the device can show
+Clock In vs Clock Out for any employee without a `status` call per person.
+`timezone` is the company zone the server files every punch under (see
+"Work dates" below).
 
 ## GET `/api/public/kiosk/status?employee_id=<uuid>`
 
@@ -87,15 +94,44 @@ Rules for the mobile client:
   open punch): drop it and show the message.
 - A clock-in while another punch is open closes the previous one automatically
   (job switch).
+- Two devices opening a punch for the same person at the same moment: the
+  database allows only one open punch per employee, so the second one comes
+  back `ok: false, retry: true`. Resend it and it becomes a normal job switch.
+- Punches for an inactive employee or a closed job are rejected (`ok: false`,
+  no `retry`) with a message to show the worker.
+
+### Closed payroll weeks
+
+Once the office closes a payroll week, a punch or clock-out that lands in it
+is **still accepted and recorded** (a queued offline punch must never be lost)
+but the database marks it `after_close`, and the office sees it flagged on
+Operations and Payroll. Nothing changes for the device. The supervisor
+Adjustments screen, however, refuses to change a closed week with the message
+"The office has closed that payroll week."
+
+### Work dates
+
+The server computes `work_date` from `at` in the company timezone stored in
+`app_settings.timezone` (currently `America/New_York`), never in UTC. A punch at
+7:30 pm Eastern is filed under that day even though it is already tomorrow in
+UTC. The device does not need to send a date.
 
 ## POST `/api/public/kiosk/verify-pin`
 
 ```json
-{ "pin": "8141" }  →  { "ok": true }
+{ "pin": "1234" }  →  { "ok": true, "token": "…" }
+{ "pin": "0000" }  →  { "ok": false, "locked": false, "retryAfterSeconds": 0 }
 ```
 
 Gate for the supervisor Adjustments screen. The code itself never leaves the
 server; the app only ever sends a candidate and reads `ok`.
+
+Five wrong codes from one address, or fifty from anywhere, in fifteen minutes
+lock the code for fifteen minutes. While locked the response is HTTP 429 with
+`locked: true` and `retryAfterSeconds`; show the wait instead of retrying.
+
+A correct code returns a signed `token` valid for 15 minutes. Send it with any
+future adjustment call; when it expires, ask for the code again.
 
 ---
 
@@ -119,6 +155,13 @@ Hand-off requirements:
 - Foremen should have the URL saved/bookmarked (add-to-home-screen works) so
   crews can punch from any phone, tablet, or laptop if the native app fails,
   will not update, loses its device key, or is pulled from the store.
+- **Open the kiosk once while online on each backup device.** That visit
+  installs the service worker and caches the crew and job lists, so the page
+  opens and punches with no signal from then on. Install it to the home
+  screen on iPhone and iPad: Safari evicts the offline cache of ordinary
+  bookmarks after seven days without a visit, but not of installed apps.
+- After each release, open the backup kiosk online once so it picks up the new
+  build; until then it keeps working on the previous one.
 - The web kiosk writes to the same database with the same duplicate-proof
   `client_punch_id`, so punches made in the backup and in the native app can
   never double-count each other.

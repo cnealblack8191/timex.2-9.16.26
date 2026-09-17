@@ -1,42 +1,31 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertAdmin } from "@/lib/auth.functions";
+import type { PinVerifyResult } from "@/lib/kiosk-api.server";
 
-const KEY = "kiosk_pin";
-
-async function readPin() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("app_settings")
-    .select("value")
-    .eq("key", KEY)
-    .maybeSingle();
-  if (error) throw error;
-  return (data?.value ?? "8141") as string;
-}
-
-/** Checks the jobsite adjustment code without ever sending it to the browser. */
+/**
+ * Checks the jobsite adjustment code without ever sending it to the browser.
+ * Rate-limited per address and globally; a correct code returns a 15-minute
+ * token that the Adjustments screen must send with every change.
+ */
 export const verifyKioskPin = createServerFn({ method: "POST" })
-  .inputValidator((data: { pin: string }) => data)
-  .handler(async ({ data }) => {
-    const current = await readPin();
-    return { ok: data.pin.trim() === current };
+  .inputValidator((input: unknown) => z.object({ pin: z.string().min(4).max(8) }).parse(input))
+  .handler(async ({ data }): Promise<PinVerifyResult> => {
+    const api = await import("@/lib/kiosk-api.server");
+    const { clientIp } = await import("@/lib/kiosk-auth.server");
+    return api.verifyPin(data.pin, clientIp(getRequest()));
   });
 
-/** Changes the code. The current code must be supplied. */
+/** Changes the code. Administrators only; the current code must be supplied. */
 export const changeKioskPin = createServerFn({ method: "POST" })
-  .inputValidator((data: { currentPin: string; newPin: string }) => data)
-  .handler(async ({ data }) => {
-    const current = await readPin();
-    if (data.currentPin.trim() !== current) {
-      return { ok: false as const, message: "Current code is not correct." };
-    }
-    const next = data.newPin.trim();
-    if (!/^\d{4,8}$/.test(next)) {
-      return { ok: false as const, message: "Use 4 to 8 numbers for the new code." };
-    }
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("app_settings")
-      .upsert({ key: KEY, value: next }, { onConflict: "key" });
-    if (error) throw error;
-    return { ok: true as const, message: "Code updated." };
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ currentPin: z.string().max(16), newPin: z.string().max(16) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const api = await import("@/lib/kiosk-api.server");
+    return api.changePin(data.currentPin, data.newPin);
   });

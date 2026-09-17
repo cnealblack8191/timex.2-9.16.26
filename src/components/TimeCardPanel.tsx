@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useJobs } from "@/hooks/use-timekeeping";
+import { useAccess } from "@/hooks/use-access";
+import { useJobs, usePayPeriods } from "@/hooks/use-timekeeping";
+import { appendNote, changeLine } from "@/lib/time-rules";
 import {
   entryHours,
   fetchEntriesBetween,
@@ -66,6 +68,9 @@ export function TimeCardPanel({
   readOnly?: boolean;
 }) {
   const queryClient = useQueryClient();
+  const { access } = useAccess();
+  const payPeriods = usePayPeriods();
+  const actor = access.displayName || access.email || "Office user";
   const [weekAnchor, setWeekAnchor] = useState(anchor);
   const [cells, setCells] = useState<Record<string, string> | null>(null);
   const [extraJobs, setExtraJobs] = useState<string[]>([]);
@@ -117,6 +122,10 @@ export function TimeCardPanel({
 
   const values = cells ?? baseCells;
   const dirty = cells != null;
+
+  // A closed week is read-only for everyone but administrators; the database enforces the same rule.
+  const closedPeriod = payPeriods.closedFor(from);
+  const locked = readOnly || (Boolean(closedPeriod) && !access.isAdmin);
 
   // jobs that have any work entries this week, plus manually added rows
   const workJobIds = useMemo(() => {
@@ -173,11 +182,19 @@ export function TimeCardPanel({
       setError("A reason is required for time card changes.");
       return;
     }
+    if (locked) {
+      setError("This week is closed. Only an administrator can change it.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const reasonNote = reason.trim();
     const noteText = notes.trim();
-    const note = noteText ? `${reasonNote} — ${noteText}` : reasonNote;
+    const note = changeLine(
+      "Time card",
+      actor,
+      noteText ? `${reasonNote} — ${noteText}` : reasonNote,
+    );
 
     try {
       for (const kind of allKinds) {
@@ -189,7 +206,8 @@ export function TimeCardPanel({
 
           const matches = entries.filter((e) => {
             if (e.work_date !== dk) return false;
-            if (kind.type === "work") return e.entry_type === "work" && (e.job_id ?? "") === kind.jobId;
+            if (kind.type === "work")
+              return e.entry_type === "work" && (e.job_id ?? "") === kind.jobId;
             return e.entry_type === kind.type;
           });
 
@@ -201,14 +219,14 @@ export function TimeCardPanel({
             if (hours != null) {
               const { error: err } = await supabase
                 .from("time_entries")
-                .update({ manual_hours: hours, edited: true, notes: note })
+                .update({ manual_hours: hours, edited: true, notes: appendNote(first.notes, note) })
                 .eq("id", first.id);
               if (err) throw err;
             }
             for (const extra of rest) {
               const { error: err } = await supabase
                 .from("time_entries")
-                .update({ manual_hours: 0, edited: true, notes: note })
+                .update({ manual_hours: 0, edited: true, notes: appendNote(extra.notes, note) })
                 .eq("id", extra.id);
               if (err) throw err;
             }
@@ -236,7 +254,12 @@ export function TimeCardPanel({
       setNotes("");
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save the time card.");
+      const message = e instanceof Error ? e.message : "Could not save the time card.";
+      setError(
+        /row-level security|permission denied/i.test(message)
+          ? "You are not allowed to change this week. It may be closed, or outside your groups."
+          : message,
+      );
     } finally {
       setSaving(false);
     }
@@ -413,9 +436,7 @@ export function TimeCardPanel({
                     </option>
                   ))}
                 </select>
-                <span className="text-[11px] text-muted-foreground">
-                  Hours accept 7.5 or 7:30
-                </span>
+                <span className="text-[11px] text-muted-foreground">Hours accept 7.5 or 7:30</span>
               </div>
             )}
           </div>
@@ -447,6 +468,13 @@ export function TimeCardPanel({
               />
             </label>
           </div>
+          {closedPeriod && (
+            <div className="mt-2 text-[12px] text-steel">
+              Week closed {new Date(closedPeriod.closed_at).toLocaleString()}
+              {closedPeriod.closed_by_name ? ` by ${closedPeriod.closed_by_name}` : ""}.
+              {access.isAdmin ? " Administrator changes are recorded." : ""}
+            </div>
+          )}
           {error && <div className="mt-2 text-[12px] font-semibold text-rose">{error}</div>}
           <div className="mt-3 flex items-center justify-between">
             <button
@@ -460,9 +488,11 @@ export function TimeCardPanel({
             >
               Reset changes
             </button>
-            {readOnly ? (
+            {locked ? (
               <span className="text-[12px] text-muted-foreground">
-                You can view this time card but not change it.
+                {readOnly
+                  ? "You can view this time card but not change it."
+                  : "This week is closed. Only an administrator can change it."}
               </span>
             ) : (
               <button

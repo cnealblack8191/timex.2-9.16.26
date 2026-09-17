@@ -23,7 +23,9 @@ export type ManagedUser = {
   employeeIds: string[];
 };
 
-async function assertAdmin(supabase: any, userId: string) {
+/** Throws unless the user holds the admin role. Used by every admin-only server function. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")

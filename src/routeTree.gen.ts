@@ -21,6 +21,7 @@ import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPtoRouteImport } from './routes/_authenticated/pto'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedTimeEntriesRouteImport } from './routes/_authenticated/time-entries'
+import { Route as ApiCronPurgePhotosRouteImport } from './routes/api/cron/purge-photos'
 import { Route as ApiPublicKioskBootstrapRouteImport } from './routes/api/public/kiosk/bootstrap'
 import { Route as ApiPublicKioskPunchRouteImport } from './routes/api/public/kiosk/punch'
 import { Route as ApiPublicKioskStatusRouteImport } from './routes/api/public/kiosk/status'
@@ -87,6 +88,11 @@ const AuthenticatedTimeEntriesRoute =
     path: '/time-entries',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiCronPurgePhotosRoute = ApiCronPurgePhotosRouteImport.update({
+  id: '/api/cron/purge-photos',
+  path: '/api/cron/purge-photos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicKioskBootstrapRoute = ApiPublicKioskBootstrapRouteImport.update({
   id: '/api/public/kiosk/bootstrap',
   path: '/api/public/kiosk/bootstrap',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/pto': typeof AuthenticatedPtoRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/time-entries': typeof AuthenticatedTimeEntriesRoute
+  '/api/cron/purge-photos': typeof ApiCronPurgePhotosRoute
   '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
   '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
   '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/time-entries': typeof AuthenticatedTimeEntriesRoute
   '/': typeof AuthenticatedIndexRoute
+  '/api/cron/purge-photos': typeof ApiCronPurgePhotosRoute
   '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
   '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
   '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/time-entries': typeof AuthenticatedTimeEntriesRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/api/cron/purge-photos': typeof ApiCronPurgePhotosRoute
   '/api/public/kiosk/bootstrap': typeof ApiPublicKioskBootstrapRoute
   '/api/public/kiosk/punch': typeof ApiPublicKioskPunchRoute
   '/api/public/kiosk/status': typeof ApiPublicKioskStatusRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/pto'
     | '/reports'
     | '/time-entries'
+    | '/api/cron/purge-photos'
     | '/api/public/kiosk/bootstrap'
     | '/api/public/kiosk/punch'
     | '/api/public/kiosk/status'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/time-entries'
     | '/'
+    | '/api/cron/purge-photos'
     | '/api/public/kiosk/bootstrap'
     | '/api/public/kiosk/punch'
     | '/api/public/kiosk/status'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/time-entries'
     | '/_authenticated/'
+    | '/api/cron/purge-photos'
     | '/api/public/kiosk/bootstrap'
     | '/api/public/kiosk/punch'
     | '/api/public/kiosk/status'
@@ -221,6 +233,7 @@ export interface RootRouteChildren {
   AdjustmentsRoute: typeof AdjustmentsRoute
   AuthRoute: typeof AuthRoute
   KioskRoute: typeof KioskRoute
+  ApiCronPurgePhotosRoute: typeof ApiCronPurgePhotosRoute
   ApiPublicKioskBootstrapRoute: typeof ApiPublicKioskBootstrapRoute
   ApiPublicKioskPunchRoute: typeof ApiPublicKioskPunchRoute
   ApiPublicKioskStatusRoute: typeof ApiPublicKioskStatusRoute
@@ -313,6 +326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTimeEntriesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/cron/purge-photos': {
+      id: '/api/cron/purge-photos'
+      path: '/api/cron/purge-photos'
+      fullPath: '/api/cron/purge-photos'
+      preLoaderRoute: typeof ApiCronPurgePhotosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/kiosk/bootstrap': {
       id: '/api/public/kiosk/bootstrap'
       path: '/api/public/kiosk/bootstrap'
@@ -374,6 +394,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdjustmentsRoute: AdjustmentsRoute,
   AuthRoute: AuthRoute,
   KioskRoute: KioskRoute,
+  ApiCronPurgePhotosRoute: ApiCronPurgePhotosRoute,
   ApiPublicKioskBootstrapRoute: ApiPublicKioskBootstrapRoute,
   ApiPublicKioskPunchRoute: ApiPublicKioskPunchRoute,
   ApiPublicKioskStatusRoute: ApiPublicKioskStatusRoute,
