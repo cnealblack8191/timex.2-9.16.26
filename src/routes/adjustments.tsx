@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import eciLogo from "@/assets/eci-logo.png.asset.json";
+import eciLogo from "@/assets/eci-logo";
 import { adjustmentEntries, kioskBootstrap, saveAdjustment } from "@/lib/kiosk.functions";
 import { verifyKioskPin } from "@/lib/kiosk-pin.functions";
 import { KIOSK_BOOTSTRAP_KEY } from "@/lib/kiosk-types";

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronDown, FileSpreadsheet, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import logoAsset from "@/assets/eci-logo.png.asset.json";
+import logoAsset from "@/assets/eci-logo";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { Button } from "@/components/ui/button";
 import {

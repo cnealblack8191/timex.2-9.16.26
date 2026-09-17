@@ -76,6 +76,8 @@ export function TimeCardPanel({
   const [extraJobs, setExtraJobs] = useState<string[]>([]);
   const [reason, setReason] = useState("");
   const [notes, setNotes] = useState("");
+  const [selectedCell, setSelectedCell] = useState<{ kind: RowKind; dateKey: string } | null>(null);
+  const [dayNotes, setDayNotes] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +105,37 @@ export function TimeCardPanel({
     queryFn: () => fetchEntriesBetween(from, to),
   });
 
+  // saved per-cell notes for this employee, loaded with the week
+  const { data: savedDayNotes = [] } = useQuery({
+    queryKey: ["day-notes", employee.id, from, to],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("day_notes")
+        .select("*")
+        .eq("employee_id", employee.id)
+        .gte("work_date", from)
+        .lte("work_date", to);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // a saved note row -> the cell it belongs to (day + job / PTO / holiday)
+  const noteCellKey = (n: { entry_type: string; job_id: string | null; work_date: string }) =>
+    n.entry_type === "work"
+      ? cellKey({ type: "work", jobId: n.job_id ?? "" }, n.work_date)
+      : cellKey({ type: n.entry_type === "pto" ? "pto" : "holiday" }, n.work_date);
+
+  // prefill the notes state from saved notes once they load (don't clobber edits)
+  const [notesLoadedFor, setNotesLoadedFor] = useState<string | null>(null);
+  const notesKey = `${employee.id}|${from}`;
+  if (notesLoadedFor !== notesKey && !isLoading) {
+    const map: Record<string, string> = {};
+    for (const n of savedDayNotes) map[noteCellKey(n)] = n.note;
+    setDayNotes((prev) => (Object.keys(prev).length === 0 ? map : prev));
+    setNotesLoadedFor(notesKey);
+  }
+
   const entries = useMemo(
     () => weekEntries.filter((e) => e.employee_id === employee.id),
     [weekEntries, employee.id],
@@ -121,7 +154,17 @@ export function TimeCardPanel({
   }, [entries]);
 
   const values = cells ?? baseCells;
-  const dirty = cells != null;
+  const savedNoteByCell = useMemo(
+    () => new Map(savedDayNotes.map((n) => [noteCellKey(n), n.note])),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [savedDayNotes],
+  );
+  const notesDirty =
+    notesLoadedFor === notesKey &&
+    [...new Set([...Object.keys(dayNotes), ...savedNoteByCell.keys()])].some(
+      (k) => (dayNotes[k] ?? "").trim() !== (savedNoteByCell.get(k) ?? "").trim(),
+    );
+  const dirty = cells != null || notesDirty;
 
   // A closed week is read-only for everyone but administrators; the database enforces the same rule.
   const closedPeriod = payPeriods.closedFor(from);
@@ -142,6 +185,7 @@ export function TimeCardPanel({
   function setCell(kind: RowKind, dateKey: string, value: string) {
     const next = { ...values, [cellKey(kind, dateKey)]: value };
     setCells(next);
+    setSelectedCell({ kind, dateKey });
   }
 
   function shiftWeek(dir: -1 | 1) {
@@ -150,12 +194,18 @@ export function TimeCardPanel({
     setWeekAnchor(toDateKey(d));
     setCells(null);
     setExtraJobs([]);
+    setSelectedCell(null);
+    setDayNotes({});
+    setNotesLoadedFor(null);
   }
 
   function goToday() {
     setWeekAnchor(toDateKey(new Date()));
     setCells(null);
     setExtraJobs([]);
+    setSelectedCell(null);
+    setDayNotes({});
+    setNotesLoadedFor(null);
   }
 
   /* ---------- totals ---------- */
@@ -178,7 +228,7 @@ export function TimeCardPanel({
   /* ---------- save ---------- */
 
   async function save() {
-    if (!reason.trim()) {
+    if (cells != null && !reason.trim()) {
       setError("A reason is required for time card changes.");
       return;
     }
@@ -246,12 +296,47 @@ export function TimeCardPanel({
         }
       }
 
+      // persist per-cell notes (day + job / PTO / holiday), independent of hour edits
+      const savedRowByCell = new Map(savedDayNotes.map((n) => [noteCellKey(n), n]));
+      for (const kind of allKinds) {
+        for (const dk of days) {
+          const key = cellKey(kind, dk);
+          const text = (dayNotes[key] ?? "").trim();
+          const existing = savedRowByCell.get(key);
+          if (text && text !== existing?.note) {
+            if (existing) {
+              const { error: err } = await supabase
+                .from("day_notes")
+                .update({ note: text })
+                .eq("id", existing.id);
+              if (err) throw err;
+            } else {
+              const { error: err } = await supabase.from("day_notes").insert({
+                employee_id: employee.id,
+                work_date: dk,
+                entry_type: kind.type,
+                job_id: kind.type === "work" ? kind.jobId || null : null,
+                note: text,
+              });
+              if (err) throw err;
+            }
+          } else if (!text && existing) {
+            const { error: err } = await supabase.from("day_notes").delete().eq("id", existing.id);
+            if (err) throw err;
+          }
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ["entries"] });
+      queryClient.invalidateQueries({ queryKey: ["day-notes"] });
       queryClient.invalidateQueries({ queryKey: ["open-entries"] });
       setCells(null);
       setExtraJobs([]);
       setReason("");
       setNotes("");
+      setSelectedCell(null);
+      setDayNotes({});
+      setNotesLoadedFor(null);
       onClose();
     } catch (e) {
       const message = e instanceof Error ? e.message : "Could not save the time card.";
@@ -267,6 +352,26 @@ export function TimeCardPanel({
 
   const inputClass =
     "w-full rounded-md bg-card px-2 py-1.5 text-center font-mono text-[13px] ring-1 ring-ink/10 focus:outline-none focus:ring-2 focus:ring-amber/60";
+
+  const isSelected = (kind: RowKind, dk: string) =>
+    selectedCell != null &&
+    rowKey(selectedCell.kind) === rowKey(kind) &&
+    selectedCell.dateKey === dk;
+
+  const cellClass = (kind: RowKind, dk: string) => {
+    const key = cellKey(kind, dk);
+    const hasNote = (dayNotes[key] ?? "").trim().length > 0;
+    return `${inputClass} cursor-pointer ${
+      isSelected(kind, dk) ? "ring-2 ring-amber/70" : hasNote ? "ring-2 ring-amber/40" : ""
+    }`;
+  };
+
+  const kindLabel = (kind: RowKind) =>
+    kind.type === "work"
+      ? jobLabel(jobById.get(kind.jobId))
+      : kind.type === "pto"
+        ? "PTO"
+        : "Holiday";
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-ink/70 p-4" onClick={onClose}>
@@ -352,9 +457,11 @@ export function TimeCardPanel({
                           <input
                             value={values[cellKey(kind, dk)] ?? ""}
                             onChange={(e) => setCell(kind, dk, e.target.value)}
+                            onFocus={() => setSelectedCell({ kind, dateKey: dk })}
+                            onClick={() => setSelectedCell({ kind, dateKey: dk })}
                             placeholder="0:00"
                             inputMode="decimal"
-                            className={inputClass}
+                            className={cellClass(kind, dk)}
                           />
                         </td>
                       ))}
@@ -391,9 +498,11 @@ export function TimeCardPanel({
                           <input
                             value={values[cellKey(kind, dk)] ?? ""}
                             onChange={(e) => setCell(kind, dk, e.target.value)}
+                            onFocus={() => setSelectedCell({ kind, dateKey: dk })}
+                            onClick={() => setSelectedCell({ kind, dateKey: dk })}
                             placeholder="0:00"
                             inputMode="decimal"
-                            className={inputClass}
+                            className={cellClass(kind, dk)}
                           />
                         </td>
                       ))}
@@ -439,6 +548,26 @@ export function TimeCardPanel({
                 <span className="text-[11px] text-muted-foreground">Hours accept 7.5 or 7:30</span>
               </div>
             )}
+
+            {selectedCell && (
+              <label className="mt-3 block rounded-lg bg-card/80 px-3 py-2.5 ring-1 ring-amber/40">
+                <span className="text-[10px] uppercase tracking-wide text-amber-deep">
+                  Notes for {kindLabel(selectedCell.kind)} — {formatDay(selectedCell.dateKey)}
+                </span>
+                <input
+                  value={dayNotes[cellKey(selectedCell.kind, selectedCell.dateKey)] ?? ""}
+                  onChange={(e) =>
+                    setDayNotes({
+                      ...dayNotes,
+                      [cellKey(selectedCell.kind, selectedCell.dateKey)]: e.target.value,
+                    })
+                  }
+                  placeholder="Anything notable about these hours?"
+                  className="w-full bg-transparent text-[13px]"
+                  autoFocus
+                />
+              </label>
+            )}
           </div>
         )}
 
@@ -482,6 +611,8 @@ export function TimeCardPanel({
                 setCells(null);
                 setReason("");
                 setNotes("");
+                setSelectedCell(null);
+                setDayNotes(Object.fromEntries(savedNoteByCell));
               }}
               disabled={!dirty}
               className="text-[12px] font-semibold text-steel disabled:opacity-40"

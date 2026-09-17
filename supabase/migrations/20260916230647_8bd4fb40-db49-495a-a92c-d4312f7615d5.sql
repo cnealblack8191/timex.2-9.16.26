@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS time_entries_client_punch_id_idx ON public.time_entries (client_punch_id);

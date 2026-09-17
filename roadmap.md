@@ -57,9 +57,16 @@ Open:
 - [x] Work dates computed in the company timezone (America/New_York)
 - [x] One open punch per employee enforced by the database
 - [ ] Per-employee kiosk code or badge number (buddy punching)
+- [ ] Audit trail, voided entries instead of deletes, close pay period
+
+## Open tasks
+- [x] Weekly time card: per-day notes field appears when a day is edited
+- [x] Operations page: charts added, bulk assignment removed
+- [x] Time Entries: clicking anywhere on a row opens that employee's weekly time card
 - [x] Change history on every time entry (docs/PAYROLL_INTEGRITY_2026-09-16.md)
 - [x] Entries are voided with a reason, never deleted; administrators can restore
 - [x] Every office correction requires a reason and appends to the notes
 - [x] Close payroll week (payroll or admin), reopen (admin only), late kiosk punches flagged
 - [x] Open punches flagged "Needs clock-out" after 14 hours, never auto-closed
 - [ ] Employee identifier for the worker import — to be agreed with the existing ECI system
+- [x] Merged timex-eci PR #1 (hardening + payroll integrity) — audit history, void-instead-of-delete, closed weeks; kept local features (row click, charts, per-cell day notes)

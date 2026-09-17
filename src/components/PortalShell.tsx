@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLiveTimekeeping } from "@/hooks/use-timekeeping";
 import { useAccess } from "@/hooks/use-access";
 import { supabase } from "@/integrations/supabase/client";
-import eciLogo from "@/assets/eci-logo.png.asset.json";
+import eciLogo from "@/assets/eci-logo";
 
 export const NAV = [
   { to: "/", label: "Home", adminOnly: false },

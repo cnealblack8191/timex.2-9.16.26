@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import eciLogo from "@/assets/eci-logo.png.asset.json";
-import timexLogo from "@/assets/timex-logo.png.asset.json";
+import eciLogo from "@/assets/eci-logo";
+import timexLogo from "@/assets/timex-logo";
 import { useAccess } from "@/hooks/use-access";
 
 export const Route = createFileRoute("/_authenticated/")({

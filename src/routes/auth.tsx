@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import eciLogo from "@/assets/eci-logo.png.asset.json";
-import timexLogo from "@/assets/timex-logo.png.asset.json";
+import eciLogo from "@/assets/eci-logo";
+import timexLogo from "@/assets/timex-logo";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Lock } from "lucide-react";
-import eciLogo from "@/assets/eci-logo.png.asset.json";
+import eciLogo from "@/assets/eci-logo";
 import { capturePunchPhoto } from "@/lib/capture-photo";
 import { kioskBootstrap, kioskPunch } from "@/lib/kiosk.functions";
 import { resolveClockedIn } from "@/lib/kiosk-state";

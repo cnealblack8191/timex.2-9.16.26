@@ -56,6 +56,54 @@ export type Database = {
         }
         Relationships: []
       }
+      day_notes: {
+        Row: {
+          created_at: string
+          employee_id: string
+          entry_type: string
+          id: string
+          job_id: string | null
+          note: string
+          updated_at: string
+          work_date: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          entry_type?: string
+          id?: string
+          job_id?: string | null
+          note: string
+          updated_at?: string
+          work_date: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          entry_type?: string
+          id?: string
+          job_id?: string | null
+          note?: string
+          updated_at?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "day_notes_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "day_notes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       divisions: {
         Row: {
           code: string
@@ -149,33 +197,6 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          active: boolean
-          created_at: string
-          display_name: string
-          email: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          display_name?: string
-          email: string
-          id: string
-          updated_at?: string
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          display_name?: string
-          email?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       pay_periods: {
         Row: {
           closed_at: string
@@ -212,42 +233,30 @@ export type Database = {
         }
         Relationships: []
       }
-      time_entry_revisions: {
+      profiles: {
         Row: {
-          action: string
-          changed_at: string
-          changed_by: string | null
-          changed_by_name: string | null
-          changed_via: string
-          employee_id: string
-          entry_id: string
+          active: boolean
+          created_at: string
+          display_name: string
+          email: string
           id: string
-          new_row: Json | null
-          old_row: Json | null
+          updated_at: string
         }
         Insert: {
-          action: string
-          changed_at?: string
-          changed_by?: string | null
-          changed_by_name?: string | null
-          changed_via: string
-          employee_id: string
-          entry_id: string
-          id?: string
-          new_row?: Json | null
-          old_row?: Json | null
+          active?: boolean
+          created_at?: string
+          display_name?: string
+          email: string
+          id: string
+          updated_at?: string
         }
         Update: {
-          action?: string
-          changed_at?: string
-          changed_by?: string | null
-          changed_by_name?: string | null
-          changed_via?: string
-          employee_id?: string
-          entry_id?: string
+          active?: boolean
+          created_at?: string
+          display_name?: string
+          email?: string
           id?: string
-          new_row?: Json | null
-          old_row?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -338,6 +347,45 @@ export type Database = {
           },
         ]
       }
+      time_entry_revisions: {
+        Row: {
+          action: string
+          changed_at: string
+          changed_by: string | null
+          changed_by_name: string | null
+          changed_via: string
+          employee_id: string
+          entry_id: string
+          id: string
+          new_row: Json | null
+          old_row: Json | null
+        }
+        Insert: {
+          action: string
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          changed_via: string
+          employee_id: string
+          entry_id: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+        }
+        Update: {
+          action?: string
+          changed_at?: string
+          changed_by?: string | null
+          changed_by_name?: string | null
+          changed_via?: string
+          employee_id?: string
+          entry_id?: string
+          id?: string
+          new_row?: Json | null
+          old_row?: Json | null
+        }
+        Relationships: []
+      }
       user_divisions: {
         Row: {
           created_at: string
@@ -423,7 +471,6 @@ export type Database = {
     }
     Functions: {
       actor_name: { Args: never; Returns: string }
-      is_week_closed: { Args: { _date: string }; Returns: boolean }
       can_edit_employee: { Args: { _employee_id: string }; Returns: boolean }
       can_view_employee: { Args: { _employee_id: string }; Returns: boolean }
       has_role: {
@@ -434,6 +481,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_week_closed: { Args: { _date: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "payroll" | "viewer"

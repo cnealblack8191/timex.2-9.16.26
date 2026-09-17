@@ -9,10 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write .",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test \"src/**/*.test.ts\"",
-    "check": "npm run typecheck && npm run test && npm run build"
+    "format": "prettier --write ."
   },
   "overrides": {
     "rolldown": "1.2.1"

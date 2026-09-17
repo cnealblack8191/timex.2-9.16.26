@@ -389,7 +389,8 @@ function TimeEntriesPage() {
                   return (
                     <tr
                       key={entry.id}
-                      className={`border-b border-line/60 hover:bg-ink/[0.02] ${
+                      onClick={() => setCardEmployeeId(entry.employee_id)}
+                      className={`cursor-pointer border-b border-line/60 hover:bg-ink/[0.04] ${
                         entry.voided ? "text-muted-foreground" : ""
                       }`}
                     >
@@ -445,7 +446,10 @@ function TimeEntriesPage() {
                           <span className="flex gap-2">
                             {entry.clock_in_photo && (
                               <button
-                                onClick={() => showPhoto(entry.id, "in")}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  showPhoto(entry.id, "in");
+                                }}
                                 className="text-[12px] font-semibold text-steel underline decoration-dotted"
                               >
                                 In
@@ -453,7 +457,10 @@ function TimeEntriesPage() {
                             )}
                             {entry.clock_out_photo && (
                               <button
-                                onClick={() => showPhoto(entry.id, "out")}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  showPhoto(entry.id, "out");
+                                }}
                                 className="text-[12px] font-semibold text-steel underline decoration-dotted"
                               >
                                 Out
@@ -481,7 +488,10 @@ function TimeEntriesPage() {
                         )}
                         {canChange(entry) && (
                           <button
-                            onClick={() => startEdit(entry)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEdit(entry);
+                            }}
                             className="text-[12px] font-semibold text-amber-deep"
                           >
                             Edit
@@ -671,12 +681,13 @@ function TimeEntriesPage() {
             </Panel>
           ) : (
             <Panel className="p-5 text-[13px] text-muted-foreground">
-              Pick <span className="font-semibold text-steel">Edit</span> on any row to correct the
-              times or change the job. Every correction needs a reason and is kept in the entry's{" "}
-              <span className="font-semibold text-steel">History</span>. Entries are voided, never
-              deleted. A punch open longer than {STALE_PUNCH_HOURS} hours is marked{" "}
+              Click anywhere on a row to open that person's weekly time card. Pick{" "}
+              <span className="font-semibold text-steel">Edit</span> on a row to correct the
+              times, change the job, or add a note. Every correction needs a reason and is kept in
+              the entry's <span className="font-semibold text-steel">History</span>. Entries are
+              voided, never deleted. A punch open longer than {STALE_PUNCH_HOURS} hours is marked{" "}
               <span className="font-semibold text-amber-deep">Needs clock-out</span> and counts zero
-              hours until someone sets the time. Punch photos load only when you click{" "}
+              hours until someone sets the time. Punch photos are only loaded when you click{" "}
               <span className="font-semibold text-steel">In</span> or{" "}
               <span className="font-semibold text-steel">Out</span>, and are deleted after{" "}
               {PHOTO_RETENTION_DAYS} days.

@@ -16,7 +16,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import logoAsset from "@/assets/eci-logo.png.asset.json";
+import logoAsset from "@/assets/eci-logo";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import { Button } from "@/components/ui/button";
 import {

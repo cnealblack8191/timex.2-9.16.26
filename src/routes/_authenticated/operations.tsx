@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Panel, PortalShell } from "@/components/PortalShell";
 import {
   useDivisions,
@@ -9,8 +19,6 @@ import {
   useOpenEntries,
   useWeekEntries,
 } from "@/hooks/use-timekeeping";
-import { supabase } from "@/integrations/supabase/client";
-import { useAccess } from "@/hooks/use-access";
 import { STALE_PUNCH_HOURS, isStalePunch } from "@/lib/time-rules";
 import {
   entryHours,
@@ -18,7 +26,9 @@ import {
   formatTime,
   fullName,
   jobLabel,
+  toDateKey,
   weekNumber,
+  weekStart,
 } from "@/lib/timekeeping";
 
 export const Route = createFileRoute("/_authenticated/operations")({
@@ -43,35 +53,18 @@ export const Route = createFileRoute("/_authenticated/operations")({
 
 function Operations() {
   const today = new Date();
-  const queryClient = useQueryClient();
-  const { access } = useAccess();
   const { data: employees = [] } = useEmployees();
   const { data: jobs = [] } = useJobs();
   const { data: divisions = [] } = useDivisions();
   const { data: open = [] } = useOpenEntries();
   const { data: weekEntries = [] } = useWeekEntries(today);
 
-  const [selectedDivisions, setSelectedDivisions] = useState<string[]>([]);
-  const [bulkJob, setBulkJob] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [assignNote, setAssignNote] = useState("");
-
-  const employeeById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
+  const employeeById = useMemo(
+    () => new Map(employees.map((e) => [e.id, e])),
+    [employees],
+  );
   const jobById = useMemo(() => new Map(jobs.map((j) => [j.id, j])), [jobs]);
   const divisionById = useMemo(() => new Map(divisions.map((d) => [d.id, d])), [divisions]);
-
-  const divisionCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    employees.forEach((e) => {
-      if (e.division_id) counts.set(e.division_id, (counts.get(e.division_id) ?? 0) + 1);
-    });
-    return counts;
-  }, [employees]);
-
-  const selectedCount = selectedDivisions.reduce(
-    (sum, id) => sum + (divisionCounts.get(id) ?? 0),
-    0,
-  );
 
   const recent = weekEntries.slice(0, 8);
   const totalHours = weekEntries
@@ -86,22 +79,58 @@ function Operations() {
   );
   const afterCloseCount = weekEntries.filter((e) => e.after_close).length;
 
-  async function bulkAssign() {
-    if (!bulkJob || selectedDivisions.length === 0) return;
-    setSaving(true);
-    const { error } = await supabase
-      .from("employees")
-      .update({ assigned_job_id: bulkJob })
-      .in("division_id", selectedDivisions);
-    setSaving(false);
-    if (error) {
-      setAssignNote(error.message);
-      return;
+  /* ---------- charts ---------- */
+
+  const dayChart = useMemo(() => {
+    const start = weekStart(today);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = toDateKey(d);
+      let worked = 0;
+      let paidLeave = 0;
+      for (const e of weekEntries) {
+        if (e.work_date !== key) continue;
+        if (e.entry_type === "work") worked += entryHours(e);
+        else paidLeave += entryHours(e);
+      }
+      return {
+        day: d.toLocaleDateString([], { weekday: "short" }),
+        worked: Math.round(worked * 100) / 100,
+        paidLeave: Math.round(paidLeave * 100) / 100,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekEntries]);
+
+  const jobChart = useMemo(() => {
+    const hours = new Map<string, number>();
+    for (const e of weekEntries) {
+      if (e.entry_type !== "work" || !e.job_id) continue;
+      hours.set(e.job_id, (hours.get(e.job_id) ?? 0) + entryHours(e));
     }
-    setAssignNote(`${selectedCount} assigned to ${jobLabel(jobById.get(bulkJob))}`);
-    setSelectedDivisions([]);
-    queryClient.invalidateQueries({ queryKey: ["employees"] });
-  }
+    return [...hours.entries()]
+      .map(([jobId, h]) => ({
+        job: jobLabel(jobById.get(jobId)).split("·")[0]?.trim() ?? "—",
+        hours: Math.round(h * 100) / 100,
+      }))
+      .sort((a, b) => b.hours - a.hours)
+      .slice(0, 6);
+  }, [weekEntries, jobById]);
+
+  const onSiteByDivision = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of open) {
+      const divId = employeeById.get(e.employee_id)?.division_id ?? "";
+      counts.set(divId, (counts.get(divId) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .map(([divId, count]) => ({
+        division: divisionById.get(divId)?.code ?? "—",
+        count,
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [open, employeeById, divisionById]);
 
   return (
     <PortalShell
@@ -267,72 +296,71 @@ function Operations() {
           </div>
         </Panel>
 
-        {access.isAdmin && (
-          <Panel className="col-span-12 flex flex-col p-4 lg:col-span-3">
-            <div className="mb-3 flex items-center justify-between">
+        <div className="col-span-12 flex animate-rise flex-col gap-5 lg:col-span-3">
+          <Panel className="p-4">
+            <div className="mb-2 flex items-center justify-between">
               <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-steel">
-                Bulk Assign
+                Hours by Day
               </span>
-              <span className="font-mono text-[11px] text-muted-foreground">By group</span>
+              <span className="font-mono text-[11px] text-muted-foreground">This week</span>
             </div>
-            <div className="mb-4 space-y-2">
-              {divisions.map((d) => {
-                const checked = selectedDivisions.includes(d.id);
-                return (
-                  <button
-                    key={d.id}
-                    onClick={() =>
-                      setSelectedDivisions((prev) =>
-                        checked ? prev.filter((id) => id !== d.id) : [...prev, d.id],
-                      )
-                    }
-                    className="flex w-full items-center gap-2.5 rounded-lg bg-card/80 px-3 py-2 text-[13px]"
-                  >
-                    <span
-                      className={`grid h-4 w-4 place-items-center rounded-[5px] text-[10px] font-bold ${
-                        checked ? "bg-amber text-ink" : "ring-1 ring-line"
-                      }`}
-                    >
-                      {checked ? "✓" : ""}
-                    </span>
-                    {d.name}
-                    <span className="ml-auto text-[11px] text-muted-foreground">
-                      {divisionCounts.get(d.id) ?? 0}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="h-[150px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dayChart} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1c232b14" vertical={false} />
+                  <XAxis dataKey="day" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="worked" name="Worked" stroke="#1c232b" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="paidLeave" name="PTO / Holiday" stroke="#f0b323" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-            <label className="mb-3 block rounded-lg bg-ink/5 px-3 py-2.5">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-steel">
-                Assign to job
-              </span>
-              <select
-                value={bulkJob}
-                onChange={(e) => setBulkJob(e.target.value)}
-                className="mt-1 w-full bg-transparent text-[13px] font-semibold"
-              >
-                <option value="">Choose a job</option>
-                {jobs.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {jobLabel(j)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="mb-4 text-[12px] text-muted-foreground">
-              {assignNote ||
-                `${selectedCount} employees selected across ${selectedDivisions.length} groups`}
-            </div>
-            <button
-              onClick={bulkAssign}
-              disabled={saving || !bulkJob || selectedCount === 0}
-              className="skew-btn mt-auto w-full rounded-xl bg-amber py-3.5 font-display text-[15px] tracking-wide text-ink transition-colors hover:bg-amber-deep disabled:opacity-40"
-            >
-              <span>{saving ? "Assigning…" : `Assign ${selectedCount} to Job`}</span>
-            </button>
           </Panel>
-        )}
+
+          <Panel className="p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-steel">
+                Hours by Job
+              </span>
+              <span className="font-mono text-[11px] text-muted-foreground">Top 6</span>
+            </div>
+            <div className="h-[150px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={jobChart} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1c232b14" vertical={false} />
+                  <XAxis dataKey="job" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <Tooltip />
+                  <Bar dataKey="hours" name="Hours" fill="#1c232b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
+
+          <Panel className="p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-steel">
+                On Site by Group
+              </span>
+              <span className="font-mono text-[11px] text-muted-foreground">
+                {open.length} active
+              </span>
+            </div>
+            <div className="h-[150px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={onSiteByDivision} margin={{ top: 4, right: 8, bottom: 0, left: -24 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1c232b14" vertical={false} />
+                  <XAxis dataKey="division" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <Tooltip />
+                  <Bar dataKey="count" name="On site" fill="#f0b323" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
+        </div>
+
       </div>
     </PortalShell>
   );
